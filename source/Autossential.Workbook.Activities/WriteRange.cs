@@ -11,7 +11,7 @@ namespace Autossential.Workbook.Activities
     public class WriteRange : WorkbookActivity
     {
         public InArgument<string> SheetName { get; set; }
-        public InArgument<string> Cell { get; set; }
+        public InArgument<string> StartingCell { get; set; }
         public InArgument<DataTable> InputDataTable { get; set; }
         public bool AddHeaders { get; set; }
         protected override bool CheckWorkbookPath => false;
@@ -21,7 +21,7 @@ namespace Autossential.Workbook.Activities
             base.CacheMetadata(metadata);
 
             if (SheetName == null) metadata.AddValidationError(Resources.Validation_ValueErrorFormat(nameof(SheetName)));
-            if (Cell == null) metadata.AddValidationError(Resources.Validation_ValueErrorFormat(nameof(Cell)));
+            if (StartingCell == null) metadata.AddValidationError(Resources.Validation_ValueErrorFormat(nameof(StartingCell)));
             if (InputDataTable == null) metadata.AddValidationError(Resources.Validation_ValueErrorFormat("DataTable"));
         }
         public override async Task<Action<AsyncCodeActivityContext>> ExecuteAsync(AsyncCodeActivityContext context, IWorkbookAdapter adapter, CancellationToken token)
@@ -30,9 +30,9 @@ namespace Autossential.Workbook.Activities
             if (string.IsNullOrEmpty(sheetName))
                 throw new ArgumentException(nameof(SheetName), Resources.Validation_NullOrEmptyFormat(nameof(SheetName)));
 
-            var cell = Cell.Get(context);
+            var cell = StartingCell.Get(context);
             if (string.IsNullOrEmpty(cell))
-                throw new ArgumentException(nameof(Cell), Resources.Validation_NullOrEmptyFormat(nameof(Cell)));
+                throw new ArgumentException(nameof(StartingCell), Resources.Validation_NullOrEmptyFormat(nameof(StartingCell)));
 
             var dt = InputDataTable.Get(context);
             if (dt == null)

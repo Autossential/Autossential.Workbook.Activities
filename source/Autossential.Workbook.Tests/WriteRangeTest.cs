@@ -134,7 +134,7 @@ namespace Autossential.Workbook.Tests
                 { nameof(WriteRange.WorkbookPath), filePath },
                 { nameof(WriteRange.SheetName), "Sheet1" },
                 { nameof(WriteRange.InputDataTable), value},
-                { nameof(WriteRange.Cell), "A1" }
+                { nameof(WriteRange.StartingCell), "A1" }
             };
         }
 

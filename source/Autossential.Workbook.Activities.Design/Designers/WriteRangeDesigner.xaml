@@ -43,11 +43,11 @@ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     Expression="{Binding ModelItem.SheetName, ConverterParameter=In, Converter={StaticResource ArgumentToExpressionConverter}}" />
 
                 <sapv:ExpressionTextBox Grid.Column="2"
-                    ExpressionType="{Binding ModelItem.Properties[Cell].PropertyType.GenericTypeArguments[0]}"
+                    ExpressionType="{Binding ModelItem.Properties[StartingCell].PropertyType.GenericTypeArguments[0]}"
                     OwnerActivity="{Binding ModelItem}"
                     UseLocationExpression="False"
                     HintText="Cell"
-                    Expression="{Binding ModelItem.Cell, ConverterParameter=In, Converter={StaticResource ArgumentToExpressionConverter}}" />
+                    Expression="{Binding ModelItem.StartingCell, ConverterParameter=In, Converter={StaticResource ArgumentToExpressionConverter}}" />
 
             </Grid>
             <sapv:ExpressionTextBox

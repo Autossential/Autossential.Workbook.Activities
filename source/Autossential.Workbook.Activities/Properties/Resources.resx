@@ -150,15 +150,11 @@
     <comment>property description</comment>
   </data>
   <data name="FreezeUnfreezePanes_SheetName_Description" xml:space="preserve">
-    <value>The sheet name.</value>
+    <value>The name of the sheet from the workbook.</value>
     <comment>property description</comment>
   </data>
   <data name="FreezeUnfreezePanes_WorkbookPath_Description" xml:space="preserve">
     <value>The workbook file path.</value>
-    <comment>property description</comment>
-  </data>
-  <data name="GetHyperlinks_CellRange_Description" xml:space="preserve">
-    <value>The cell range to look for hyperlinks.</value>
     <comment>property description</comment>
   </data>
   <data name="GetHyperlinks_Description" xml:space="preserve">
@@ -169,12 +165,16 @@
     <value>Get Hyperlinks</value>
     <comment>activity name</comment>
   </data>
+  <data name="GetHyperlinks_Range_Description" xml:space="preserve">
+    <value>The cell range to look for hyperlinks. If empty, it will look in all used range of the sheet.</value>
+    <comment>property description</comment>
+  </data>
   <data name="GetHyperlinks_Result_Description" xml:space="preserve">
     <value>The hyperlinks found in the specified range.</value>
     <comment>property description</comment>
   </data>
   <data name="GetHyperlinks_SheetName_Description" xml:space="preserve">
-    <value>The sheet name.</value>
+    <value>The name of the sheet from the workbook.</value>
     <comment>property description</comment>
   </data>
   <data name="GetHyperlinks_WorkbookPath_Description" xml:space="preserve">
@@ -190,7 +190,7 @@
     <comment>activity name</comment>
   </data>
   <data name="GetSheetNames_Result_Description" xml:space="preserve">
-    <value>The sheet names.</value>
+    <value>The sheet names from the workbook.</value>
     <comment>property description</comment>
   </data>
   <data name="GetSheetNames_WorkbookPath_Description" xml:space="preserve">
@@ -206,7 +206,7 @@
     <comment>activity name</comment>
   </data>
   <data name="GetSheetName_Result_Description" xml:space="preserve">
-    <value>The sheet name.</value>
+    <value>The name of the sheet from the workbook.</value>
     <comment>property description</comment>
   </data>
   <data name="GetSheetName_SheetIndex_Description" xml:space="preserve">
@@ -226,12 +226,12 @@
     <comment>category</comment>
   </data>
   <data name="InsertHyperlink_Cell_Description" xml:space="preserve">
-    <value>The cell address to insert the hyperlink. E.g: "A3", "D5", "F9"...</value>
+    <value>The cell address (in range format) where the hyperlink will be written. e.g: "A3", "D5", "F9"...</value>
     <comment>property description</comment>
   </data>
   <data name="InsertHyperlink_Description" xml:space="preserve">
     <value>Inserts hyperlinks on the specified cell address.</value>
-    <comment>property description</comment>
+    <comment>activity description</comment>
   </data>
   <data name="InsertHyperlink_DisplayName" xml:space="preserve">
     <value>Insert Hyperlinks</value>
@@ -250,11 +250,11 @@
     <comment>property description</comment>
   </data>
   <data name="InsertHyperlink_SheetName_Description" xml:space="preserve">
-    <value>The sheet name.</value>
+    <value>The name of the sheet from the workbook.</value>
     <comment>property description</comment>
   </data>
   <data name="InsertHyperlink_Tooltip_Description" xml:space="preserve">
-    <value>The tooltip of the link. This feature only works on open xml formats.</value>
+    <value>The tooltip of the link. This feature only works for Open XML (*.xlsx) formats.</value>
     <comment>property description</comment>
   </data>
   <data name="InsertHyperlink_WorkbookPath_Description" xml:space="preserve">
@@ -269,24 +269,52 @@
     <value>Output</value>
     <comment>category</comment>
   </data>
-  <data name="RemoveHyperlinks_CellRange_Description" xml:space="preserve">
-    <value>The cell range to look for hyperlinks and remove them.</value>
+  <data name="ReadRange_AddHeaders_Description" xml:space="preserve">
+    <value>Specifies if the first row in the range should be considered column headers definitions. If set to false, the columns in the DataTable will use the following pattern "Column{index}", e.g.: Column0, Column1, Column2...</value>
+    <comment>property description</comment>
+  </data>
+  <data name="ReadRange_Description" xml:space="preserve">
+    <value>Reads the value of a range from a spreadsheet as a DataTable. If the range is not specified, all used cells in the spreadsheet are read. If the range is specified as a cell, all used rows starting from that cell is read.</value>
+    <comment>activity description</comment>
+  </data>
+  <data name="ReadRange_DisplayName" xml:space="preserve">
+    <value>Read Range</value>
+    <comment>activity name</comment>
+  </data>
+  <data name="ReadRange_Range_Description" xml:space="preserve">
+    <value>Specifies the range of cells to be read. If this value is not specified, all used cells of the spreadsheet is read. If the value consists of only one cell, all used rows in the spreadsheet are read starting from that cell.</value>
+    <comment>property description</comment>
+  </data>
+  <data name="ReadRange_Result_Description" xml:space="preserve">
+    <value>The output DataTable in which the read data is stored.</value>
+    <comment>property description</comment>
+  </data>
+  <data name="ReadRange_SheetName_Description" xml:space="preserve">
+    <value>The name of the sheet from the workbook.</value>
+    <comment>property description</comment>
+  </data>
+  <data name="ReadRange_WorkbookPath_Description" xml:space="preserve">
+    <value>The workbook file path.</value>
     <comment>property description</comment>
   </data>
   <data name="RemoveHyperlinks_Description" xml:space="preserve">
     <value>Removes the hyperlinks from the specified cell range.</value>
-    <comment>property description</comment>
+    <comment>activity description</comment>
   </data>
   <data name="RemoveHyperlinks_DisplayName" xml:space="preserve">
     <value>Remove Hyperlinks</value>
     <comment>activity name</comment>
+  </data>
+  <data name="RemoveHyperlinks_Range_Description" xml:space="preserve">
+    <value>The cell range to look for hyperlinks and remove them. If empty, it will look in all used range of the sheet.</value>
+    <comment>property description</comment>
   </data>
   <data name="RemoveHyperlinks_Result_Description" xml:space="preserve">
     <value>The number of links removed on the specified range.</value>
     <comment>property description</comment>
   </data>
   <data name="RemoveHyperlinks_SheetName_Description" xml:space="preserve">
-    <value>The sheet name.</value>
+    <value>The name of the sheet from the workbook.</value>
     <comment>property description</comment>
   </data>
   <data name="RemoveHyperlinks_WorkbookPath_Description" xml:space="preserve">
@@ -314,7 +342,7 @@
     <comment>validation</comment>
   </data>
   <data name="WorkbookScope_Description" xml:space="preserve">
-    <value>Shares the same workbook instance across the child activities.</value>
+    <value>Opens a workbook and share its instance across the child activities. The WorkbookPath of this activity is used on the child activities, even if they have their own value is set. The use of this activity is recommended when multiple write operations on the same workbook are going to be performed because only at the end of the scope the file is actually saved, thus the performance is better. For single operations, this activity is unnecessary.</value>
     <comment>activity description</comment>
   </data>
   <data name="WorkbookScope_DisplayName" xml:space="preserve">
@@ -322,6 +350,58 @@
     <comment>activity name</comment>
   </data>
   <data name="WorkbookScope_WorkbookPath_Description" xml:space="preserve">
+    <value>The workbook file path.</value>
+    <comment>property description</comment>
+  </data>
+  <data name="WriteCell_Cell_Description" xml:space="preserve">
+    <value>The cell address (in range format) where the value will be written. e.g: "A3", "D5", "F9"...</value>
+    <comment>property description</comment>
+  </data>
+  <data name="WriteCell_Description" xml:space="preserve">
+    <value>Writes a value in a specific cell of the workbook.</value>
+    <comment>activity description</comment>
+  </data>
+  <data name="WriteCell_DisplayName_Description" xml:space="preserve">
+    <value>Write Cell</value>
+    <comment>activity name</comment>
+  </data>
+  <data name="WriteCell_SheetName_Description" xml:space="preserve">
+    <value>The name of the sheet from the workbook.</value>
+    <comment>property description</comment>
+  </data>
+  <data name="WriteCell_Value_Description" xml:space="preserve">
+    <value>The value to write on the cell.</value>
+    <comment>property description</comment>
+  </data>
+  <data name="WriteCell_WorkbookPath_Description" xml:space="preserve">
+    <value>The workbook file path.</value>
+    <comment>property description</comment>
+  </data>
+  <data name="WriteRange_AddHeaders_Description" xml:space="preserve">
+    <value>Specifies if the first row written should be the column names from the DataTable input.</value>
+    <comment>property description</comment>
+  </data>
+  <data name="WriteRange_Description" xml:space="preserve">
+    <value>Writes the data from a DataTable in a spreadsheet starting form StartingCell. If StartingCell is not specified, it will start at A1. If the sheet does not exist a new one is created with the SheetName value. All cells within the DataTable range are overwritten.</value>
+    <comment>activity description</comment>
+  </data>
+  <data name="WriteRange_DisplayName" xml:space="preserve">
+    <value>Write Range</value>
+    <comment>activity name</comment>
+  </data>
+  <data name="WriteRange_InputDataTable_Description" xml:space="preserve">
+    <value>The data table object containing the input data.</value>
+    <comment>property description</comment>
+  </data>
+  <data name="WriteRange_SheetName_Description" xml:space="preserve">
+    <value>The name of the sheet from the workbook.</value>
+    <comment>property description</comment>
+  </data>
+  <data name="WriteRange_StartingCell_Description" xml:space="preserve">
+    <value>Specifies the starting cell (in range format) from which the input will be written. e.g: "A1", "C3", "E7"...</value>
+    <comment>property description</comment>
+  </data>
+  <data name="WriteRange_WorkbookPath_Description" xml:space="preserve">
     <value>The workbook file path.</value>
     <comment>property description</comment>
   </data>
