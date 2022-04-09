@@ -23,13 +23,22 @@ namespace Autossential.Workbook.Activities
         public override async Task<Action<AsyncCodeActivityContext>> ExecuteAsync(AsyncCodeActivityContext context, IWorkbookAdapter adapter, CancellationToken token)
         {
             var sheetName = SheetName.Get(context);
-            var cellAddress = Cell.Get(context);
+            if (string.IsNullOrEmpty(sheetName))
+                throw new ArgumentException(nameof(SheetName), Resources.Validation_NullOrEmptyFormat(nameof(SheetName)));
+
+            var cell = Cell.Get(context);
+            if (string.IsNullOrEmpty(cell))
+                throw new ArgumentException(nameof(Cell), Resources.Validation_NullOrEmptyFormat(nameof(Cell)));
+
             var link = Link.Get(context);
+            if (string.IsNullOrEmpty(link))
+                throw new ArgumentException(nameof(Link), Resources.Validation_NullOrEmptyFormat(nameof(Link)));
+
             var label = Label.Get(context);
             var tooltip = Tooltip.Get(context);
 
-            var result = await adapter.AddHyperLinkAsync(sheetName, cellAddress, label, link, tooltip);
-            return ctx => Result.Set(ctx, result);
+            await Task.Run(() => adapter.AddHyperLink(sheetName, cell, label, link, tooltip));
+            return null;
         }
     }
 }

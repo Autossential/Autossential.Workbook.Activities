@@ -2,9 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Autossential.Workbook.Core.Adapters
 {
@@ -12,22 +10,28 @@ namespace Autossential.Workbook.Core.Adapters
     {
         private XLWorkbook _workbook = null;
 
-        private XLWorkbook GetWorkbook()
-        {
-            if (_workbook == null)
-                _workbook = new XLWorkbook(WorkbookFileStream, XLEventTracking.Disabled);
-
-            return _workbook;
-        }
-
         public OpenXmlWorkbookAdapter(string filePath) : base(filePath)
         {
         }
 
-        private IXLCells GetCells(string sheetName, string range)
+        public override void AddHyperLink(string sheetName, string cell, string label, string link, string tooltip)
         {
-            var sheet = GetWorkbook().Worksheet(sheetName);
-            return string.IsNullOrEmpty(range) ? sheet.CellsUsed() : sheet.Range(range).CellsUsed();
+            var sheetCell = GetOrCreateSheet(sheetName).Cell(cell);
+            sheetCell.Hyperlink = new XLHyperlink(link, tooltip);
+            if (string.IsNullOrEmpty(label))
+                label = link;
+
+            sheetCell.SetValue(label);
+            RequiresSave();
+        }
+
+        public override void CreateNew()
+        {
+            using (var workbook = new XLWorkbook())
+            {
+                workbook.AddWorksheet("Sheet1");
+                workbook.SaveAs(FilePath);
+            }
         }
 
         public override void Dispose(bool disposing)
@@ -36,50 +40,74 @@ namespace Autossential.Workbook.Core.Adapters
                 _workbook.Dispose();
         }
 
-        public override async Task<bool> AddHyperLinkAsync(string sheetName, string cellAddress, string label, string address, string tooltip)
+        public override void FreezePanes(string sheetName, int cols, int rows)
         {
+            var sheet = GetWorkbook().Worksheet(sheetName);
+            sheet.SheetView.Freeze(rows, cols);
             RequiresSave();
-            return await Task.Run(() =>
-            {
-                var cell = GetOrCreateSheet(sheetName).Cell(cellAddress);
-                cell.Hyperlink = new XLHyperlink(address, tooltip);
-                if (string.IsNullOrEmpty(label))
-                    label = address;
-
-                cell.SetValue(label);
-                return true;
-            });
         }
 
-        public override async Task<int> RemoveHyperlinksAsync(string sheetName, string range)
+        public override string[] GetHyperlinks(string sheetName, string range)
+            => EnumerateHyperlinks(sheetName, range).ToArray();
+
+        public override Action GetSaveHandler() => GetWorkbook().Save;
+
+        public override int RemoveHyperLinks(string sheetName, string range)
         {
-            var result = await Task.Run(() =>
+            var count = 0;
+            foreach (var cell in GetCells(sheetName, range))
             {
-                var count = 0;
-                foreach (var cell in GetCells(sheetName, range))
+                if (cell.HasHyperlink)
                 {
-                    if (cell.HasHyperlink)
-                    {
-                        cell.Hyperlink.Delete();
-                        count++;
-                    }
+                    cell.Hyperlink.Delete();
+                    count++;
                 }
+            }
 
-                return count;
-            });
-
-            if (result > 0)
+            if (count > 0)
                 RequiresSave();
 
-            return result;
+            return count;
         }
 
-        public override async Task<string[]> GetHyperlinksAsync(string sheetName, string range)
+        public override void WriteCell(string sheetName, string cell, object value)
         {
-            return await Task.Run(() => GetHyperlinks(sheetName, range).ToArray());
+            var sheetCell = GetOrCreateSheet(sheetName).Cell(cell);
+            sheetCell.Value = value;
+            RequiresSave();
         }
 
-        private IEnumerable<string> GetHyperlinks(string sheetName, string range)
+        public override void WriteRange(string sheetName, string cell, DataTable dataTable, bool addHeaders)
+        {
+            if (dataTable.Rows.Count == 0)
+                return;
+
+            var sheet = GetOrCreateSheet(sheetName);
+            var sheetCell = sheet.Cell(cell);
+            var rowIndex = sheetCell.Address.RowNumber;
+            var colIndex = sheetCell.Address.ColumnNumber;
+
+            if (addHeaders)
+            {
+                foreach (DataColumn col in dataTable.Columns)
+                    sheet.Cell(rowIndex, colIndex++).SetValue(col.ColumnName);
+
+                colIndex = sheetCell.Address.ColumnNumber;
+                rowIndex++;
+            }
+
+            foreach (DataRow dr in dataTable.Rows)
+            {
+                for (int i = 0; i < dr.ItemArray.Length; i++)
+                    sheet.Cell(rowIndex, colIndex + i).SetValue(dr[i]);
+
+                rowIndex++;
+            }
+
+            RequiresSave();
+        }
+
+        private IEnumerable<string> EnumerateHyperlinks(string sheetName, string range)
         {
             foreach (var cell in GetCells(sheetName, range))
             {
@@ -96,58 +124,10 @@ namespace Autossential.Workbook.Core.Adapters
             }
         }
 
-        public override Action GetSaveHandler() => GetWorkbook().Save;
-
-        public override void CreateNew()
+        private IXLCells GetCells(string sheetName, string range)
         {
-            using (var workbook = new XLWorkbook())
-            {
-                workbook.AddWorksheet("Sheet1");
-                workbook.SaveAs(FilePath);
-            }
-        }
-
-        public override async Task WriteRangeAsync(string sheetName, string cellAddress, DataTable value, bool addHeaders)
-        {
-            if (value.Rows.Count == 0)
-                return;
-
-            RequiresSave();
-
-            await Task.Run(() =>
-            {
-                var sheet = GetOrCreateSheet(sheetName);
-                var cell = sheet.Cell(cellAddress);
-                var rowIndex = cell.Address.RowNumber;
-                var colIndex = cell.Address.ColumnNumber;
-
-                if (addHeaders)
-                {
-                    foreach (DataColumn col in value.Columns)
-                        sheet.Cell(rowIndex, colIndex++).SetValue(col.ColumnName);
-
-                    colIndex = cell.Address.ColumnNumber;
-                    rowIndex++;
-                }
-
-                foreach (DataRow dr in value.Rows)
-                {
-                    for (int i = 0; i < dr.ItemArray.Length; i++)
-                        sheet.Cell(rowIndex, colIndex + i).SetValue(dr[i]);
-                    
-                    rowIndex++;
-                }
-            });
-        }
-
-        public override async Task WriteCellAsync(string sheetName, string cellAddress, object value)
-        {
-            RequiresSave();
-            await Task.Run(() =>
-            {
-                var cell = GetOrCreateSheet(sheetName).Cell(cellAddress);
-                cell.Value = value;
-            });
+            var sheet = GetWorkbook().Worksheet(sheetName);
+            return string.IsNullOrEmpty(range) ? sheet.CellsUsed() : sheet.Range(range).CellsUsed();
         }
 
         private IXLWorksheet GetOrCreateSheet(string sheetName)
@@ -167,6 +147,14 @@ namespace Autossential.Workbook.Core.Adapters
             }
 
             return sheet;
+        }
+
+        private XLWorkbook GetWorkbook()
+        {
+            if (_workbook == null)
+                _workbook = new XLWorkbook(WorkbookFileStream, XLEventTracking.Disabled);
+
+            return _workbook;
         }
     }
 }

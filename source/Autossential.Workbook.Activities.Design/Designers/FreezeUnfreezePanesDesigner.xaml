@@ -1,4 +1,4 @@
-﻿<sap:ActivityDesigner x:Class="Autossential.Workbook.Activities.Design.Designers.WriteRangeDesigner"
+﻿<sap:ActivityDesigner x:Class="Autossential.Workbook.Activities.Design.Designers.FreezeUnfreezePanesDesigner"
 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:sap="clr-namespace:System.Activities.Presentation;assembly=System.Activities.Presentation"
@@ -19,7 +19,7 @@ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     </sap:ActivityDesigner.Resources>
 
     <sap:ActivityDesigner.Icon>
-        <DrawingBrush Drawing="{StaticResource WriteRangeIcon}" Stretch="Uniform"></DrawingBrush>
+        <DrawingBrush Drawing="{StaticResource FreezeUnfreezePanesIcon}" Stretch="Uniform"></DrawingBrush>
     </sap:ActivityDesigner.Icon>
 
     <c:ActivityDecoratorControl Style="{StaticResource ActivityDecoratorStyle}">
@@ -33,6 +33,8 @@ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     <ColumnDefinition Width="*"></ColumnDefinition>
                     <ColumnDefinition Width="5"></ColumnDefinition>
                     <ColumnDefinition Width="60"></ColumnDefinition>
+                    <ColumnDefinition Width="5"></ColumnDefinition>
+                    <ColumnDefinition Width="60"></ColumnDefinition>
                 </Grid.ColumnDefinitions>
 
                 <sapv:ExpressionTextBox Grid.Column="0"
@@ -43,20 +45,19 @@ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     Expression="{Binding ModelItem.SheetName, ConverterParameter=In, Converter={StaticResource ArgumentToExpressionConverter}}" />
 
                 <sapv:ExpressionTextBox Grid.Column="2"
-                    ExpressionType="{Binding ModelItem.Properties[Cell].PropertyType.GenericTypeArguments[0]}"
+                    ExpressionType="{Binding ModelItem.Properties[Cols].PropertyType.GenericTypeArguments[0]}"
                     OwnerActivity="{Binding ModelItem}"
                     UseLocationExpression="False"
-                    HintText="Cell"
-                    Expression="{Binding ModelItem.Cell, ConverterParameter=In, Converter={StaticResource ArgumentToExpressionConverter}}" />
+                    HintText="Cols"
+                    Expression="{Binding ModelItem.Cols, ConverterParameter=In, Converter={StaticResource ArgumentToExpressionConverter}}" />
 
-            </Grid>
-            <sapv:ExpressionTextBox
-                    ExpressionType="{Binding ModelItem.Properties[InputDataTable].PropertyType.GenericTypeArguments[0]}"
+                <sapv:ExpressionTextBox Grid.Column="4"
+                    ExpressionType="{Binding ModelItem.Properties[Rows].PropertyType.GenericTypeArguments[0]}"
                     OwnerActivity="{Binding ModelItem}"
                     UseLocationExpression="False"
-                    HintText="Value"
-                    Margin="0 4 0 0"
-                    Expression="{Binding ModelItem.InputDataTable, ConverterParameter=In, Converter={StaticResource ArgumentToExpressionConverter}}" />
+                    HintText="Rows"
+                    Expression="{Binding ModelItem.Rows, ConverterParameter=In, Converter={StaticResource ArgumentToExpressionConverter}}" />
+            </Grid>
         </StackPanel>
 
     </c:ActivityDecoratorControl>

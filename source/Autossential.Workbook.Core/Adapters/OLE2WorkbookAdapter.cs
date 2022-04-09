@@ -4,71 +4,57 @@ using NPOI.SS.Util;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Autossential.Workbook.Core.Adapters
 {
     public class OLE2WorkbookAdapter : WorkbookAdapterBase
     {
+        public const int MAX_ROWS = 65536;
+
+        private HSSFWorkbook _workbook;
+
         public OLE2WorkbookAdapter(string filePath) : base(filePath)
         {
         }
 
-        private HSSFWorkbook _workbook;
-        private HSSFWorkbook GetWorkbook()
+        public override void AddHyperLink(string sheetName, string cell, string label, string link, string tooltip)
         {
-            if (_workbook == null)
-                _workbook = new HSSFWorkbook(WorkbookFileStream);
+            var sheetCell = GetOrCreateCell(GetOrCreateSheet(sheetName), cell);
+            var linkType = HyperlinkType.Document;
 
-            return _workbook;
-        }
+            if (Regex.IsMatch(link, "(https?|ftp)://", RegexOptions.IgnoreCase))
+            {
+                linkType = HyperlinkType.Url;
+            }
+            else if (link.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase))
+            {
+                linkType = HyperlinkType.Email;
+            }
+            else if (!string.IsNullOrEmpty(Path.GetExtension(link)))
+            {
+                linkType = HyperlinkType.File;
+            }
 
-        public override async Task<bool> AddHyperLinkAsync(string sheetName, string cellAddress, string label, string address, string tooltip)
-        {
+            sheetCell.Hyperlink = new HSSFHyperlink(linkType) { Address = link };
+            if (string.IsNullOrEmpty(label))
+                label = link;
+
+            sheetCell.SetCellValue(label);
+
             RequiresSave();
-
-            return await Task.Run(() =>
-            {
-                var cell = GetOrCreateCell(GetOrCreateSheet(sheetName), cellAddress);
-
-                var linkType = HyperlinkType.Document;
-
-                if (Regex.IsMatch(address, "(https?|ftp)://", RegexOptions.IgnoreCase))
-                {
-                    linkType = HyperlinkType.Url;
-                }
-                else if (address.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase))
-                {
-                    linkType = HyperlinkType.Email;
-                }
-                else if (!string.IsNullOrEmpty(Path.GetExtension(address)))
-                {
-                    linkType = HyperlinkType.File;
-                }
-
-                cell.Hyperlink = new HSSFHyperlink(linkType) { Address = address };
-                if (string.IsNullOrEmpty(label))
-                    label = address;
-
-                cell.SetCellValue(label);
-                return true;
-            });
         }
 
-
-        public override async Task<string[]> GetHyperlinksAsync(string sheetName, string range)
+        public override void CreateNew()
         {
-            return await Task.Run(() => GetHyperlinks(sheetName, range).ToArray());
-        }
-        private IEnumerable<string> GetHyperlinks(string sheetName, string range)
-        {
-            foreach (var cell in GetCells(sheetName, range))
+            using (FileStream fs = new FileStream(FilePath, FileMode.Create, FileAccess.Write))
             {
-                if (cell.Hyperlink != null)
-                    yield return cell.Hyperlink.Address;
+                var workbook = new HSSFWorkbook();
+                workbook.CreateSheet("Sheet1");
+                workbook.Write(fs);
             }
         }
 
@@ -76,6 +62,155 @@ namespace Autossential.Workbook.Core.Adapters
         {
             if (disposing && _workbook != null)
                 _workbook.Close();
+        }
+
+        public override void FreezePanes(string sheetName, int cols, int rows)
+        {
+            var sheet = GetWorkbook().GetSheet(sheetName);
+            sheet.CreateFreezePane(cols, rows);
+            RequiresSave();
+        }
+
+        public override string[] GetHyperlinks(string sheetName, string range)
+            => EnumerateLinks(sheetName, range).ToArray();
+
+        public override Action GetSaveHandler() => () =>
+              {
+                  using (FileStream fs = new FileStream(FilePath, FileMode.Create, FileAccess.Write))
+                  {
+                      GetWorkbook().Write(fs);
+                  }
+              };
+
+        public override int RemoveHyperLinks(string sheetName, string range)
+        {
+            int count = 0;
+            foreach (var cell in GetCells(sheetName, range))
+            {
+                if (cell.Hyperlink == null)
+                    continue;
+
+                count++;
+                cell.RemoveHyperlink();
+            }
+
+            if (count > 0)
+                RequiresSave();
+
+            return count;
+        }
+
+        public override void WriteCell(string sheetName, string cell, object value)
+        {
+            var sheetCell = GetOrCreateCell(GetOrCreateSheet(sheetName), cell);
+            SetCellValue(sheetCell, value);
+        }
+
+        public override void WriteRange(string sheetName, string cell, DataTable dataTable, bool addHeaders)
+        {
+            if (dataTable.Rows.Count == 0)
+                return;
+
+            var sheet = GetOrCreateSheet(sheetName);
+            var cellRef = new CellReference(cell);
+            var rowIndex = cellRef.Row;
+            var colIndex = cellRef.Col;
+
+            if (addHeaders)
+            {
+                var row = sheet.GetRow(rowIndex) ?? sheet.CreateRow(rowIndex);
+                foreach (DataColumn col in dataTable.Columns)
+                {
+                    var sheetCell = row.GetCell(colIndex) ?? row.CreateCell(colIndex);
+                    sheetCell.SetCellValue(col.ColumnName);
+
+                    if (col.DataType == typeof(int))
+                    {
+                        var style = _workbook.CreateCellStyle();
+                        style.DataFormat = HSSFDataFormat.GetBuiltinFormat("0");
+                        sheet.SetDefaultColumnStyle(col.Ordinal, style);
+                    }
+                    else if (col.DataType == typeof(double) || col.DataType == typeof(decimal))
+                    {
+                        var style = _workbook.CreateCellStyle();
+                        style.DataFormat = HSSFDataFormat.GetBuiltinFormat("0.00");
+                        sheet.SetDefaultColumnStyle(col.Ordinal, style);
+                    }
+                    else if (col.DataType == typeof(DateTime))
+                    {
+                        var dateFormat = CultureInfo.CurrentCulture.DateTimeFormat;
+                        var shortPattern = (dateFormat.ShortDatePattern + " " + dateFormat.ShortTimePattern).Replace("tt", "").Trim();
+                        var style = _workbook.CreateCellStyle();
+                        style.DataFormat = _workbook.CreateDataFormat().GetFormat(shortPattern);
+                        sheet.SetDefaultColumnStyle(col.Ordinal, style);
+                    }
+                    else if (col.DataType == typeof(bool))
+                    {
+                        var style = _workbook.CreateCellStyle();
+                        style.Alignment = HorizontalAlignment.Center;
+                        sheet.SetDefaultColumnStyle(col.Ordinal, style);
+                    }
+                    else
+                    {
+                        var style = _workbook.CreateCellStyle();
+                        sheet.SetDefaultColumnStyle(col.Ordinal, style);
+                    }
+
+                    colIndex++;
+                }
+
+                colIndex = cellRef.Col;
+                rowIndex++;
+            }
+
+            foreach (DataRow dr in dataTable.Rows)
+            {
+                var row = sheet.GetRow(rowIndex) ?? sheet.CreateRow(rowIndex);
+                for (int i = 0; i < dr.ItemArray.Length; i++)
+                {
+                    var sheetCell = row.GetCell(colIndex + i) ?? row.CreateCell(colIndex + i);
+                    SetCellValue(sheetCell, dr[i]);
+                }
+
+                if (++rowIndex == MAX_ROWS)
+                    break;
+            }
+        }
+
+        private static ICell GetOrCreateCell(ISheet sheet, string cellAddress)
+        {
+            var cellRef = new CellReference(cellAddress);
+            var row = sheet.GetRow(cellRef.Row) ?? sheet.CreateRow(cellRef.Row);
+            return row.GetCell(cellRef.Col) ?? row.CreateCell(cellRef.Col);
+        }
+
+        private static void SetCellValue(ICell cell, object value)
+        {
+            if (value == null)
+                return;
+
+            if (value is int || value is decimal)
+                value = double.Parse(value.ToString());
+
+            if (value is double dblValue)
+                cell.SetCellValue(dblValue);
+            else if (value is DateTime dateV)
+                cell.SetCellValue(dateV);
+            else if (value is string strV)
+                cell.SetCellValue(strV);
+            else if (value is bool boolV)
+                cell.SetCellValue(boolV.ToString().ToUpperInvariant());
+            else
+                cell.SetCellValue(value?.ToString());
+        }
+
+        private IEnumerable<string> EnumerateLinks(string sheetName, string range)
+        {
+            foreach (var cell in GetCells(sheetName, range))
+            {
+                if (cell.Hyperlink != null)
+                    yield return cell.Hyperlink.Address;
+            }
         }
 
         private IEnumerable<ICell> GetCells(string sheetName, string cellRange)
@@ -121,125 +256,6 @@ namespace Autossential.Workbook.Core.Adapters
             }
         }
 
-        public override async Task<int> RemoveHyperlinksAsync(string sheetName, string range)
-        {
-            var result = await Task.Run(() =>
-            {
-                int count = 0;
-                foreach (var cell in GetCells(sheetName, range))
-                {
-                    if (cell.Hyperlink == null)
-                        continue;
-
-                    count++;
-                    cell.RemoveHyperlink();
-                }
-                return count;
-            });
-
-            if (result > 0)
-                RequiresSave();
-
-            return result;
-        }
-
-        public override Action GetSaveHandler()
-        {
-            return () =>
-            {
-                using (FileStream fs = new FileStream(FilePath, FileMode.Create, FileAccess.Write))
-                {
-                    GetWorkbook().Write(fs);
-                }
-            };
-        }
-
-        public override void CreateNew()
-        {
-            using (FileStream fs = new FileStream(FilePath, FileMode.Create, FileAccess.Write))
-            {
-                var workbook = new HSSFWorkbook();
-                workbook.CreateSheet("Sheet1");
-                workbook.Write(fs);
-            }
-        }
-
-        public override async Task WriteRangeAsync(string sheetName, string cellAddress, DataTable value, bool addHeaders)
-        {
-            if (value.Rows.Count == 0)
-                return;
-
-            RequiresSave();
-
-            await Task.Run(() =>
-            {
-                var sheet = GetOrCreateSheet(sheetName);
-                var cellRef = new CellReference(cellAddress);
-                var rowIndex = cellRef.Row;
-                var colIndex = cellRef.Col;
-
-                if (addHeaders)
-                {
-                    var row = sheet.GetRow(rowIndex) ?? sheet.CreateRow(rowIndex);
-                    foreach (DataColumn col in value.Columns)
-                    {
-                        var cell = row.GetCell(colIndex) ?? row.CreateCell(colIndex);
-                        cell.SetCellValue(col.ColumnName);
-                        colIndex++;
-                    }
-
-                    colIndex = cellRef.Col;
-                    rowIndex++;
-                }
-
-                foreach (DataRow dr in value.Rows)
-                {
-                    var row = sheet.GetRow(rowIndex) ?? sheet.CreateRow(rowIndex);
-                    for (int i = 0; i < dr.ItemArray.Length; i++)
-                    {
-                        var cell = row.GetCell(colIndex + i) ?? row.CreateCell(colIndex + i);
-                        SetCellValue(cell, dr[i]);
-                    }
-                    rowIndex++;
-                }
-            });
-        }
-
-        private void SetCellValue(ICell cell, object value)
-        {
-            if (value == null)
-                return;
-
-            if (value is int || value is decimal)
-                value = double.Parse(value.ToString());
-
-            if (value is double dblValue)
-                cell.SetCellValue(dblValue);
-            else if (value is DateTime dateV)
-                cell.SetCellValue(dateV);
-            else if (value is string strV)
-                cell.SetCellValue(strV);
-            else
-                cell.SetCellValue(value?.ToString());
-        }
-
-        public override async Task WriteCellAsync(string sheetName, string cellAddress, object value)
-        {
-            RequiresSave();
-            await Task.Run(() =>
-            {
-                var cell = GetOrCreateCell(GetOrCreateSheet(sheetName), cellAddress);
-                SetCellValue(cell, value);
-            });
-        }
-
-        private ICell GetOrCreateCell(ISheet sheet, string cellAddress)
-        {
-            var cellRef = new CellReference(cellAddress);
-            var row = sheet.GetRow(cellRef.Row) ?? sheet.CreateRow(cellRef.Row);
-            return row.GetCell(cellRef.Col) ?? row.CreateCell(cellRef.Col);
-        }
-
         private ISheet GetOrCreateSheet(string sheetName)
         {
             var wb = GetWorkbook();
@@ -259,6 +275,14 @@ namespace Autossential.Workbook.Core.Adapters
             }
 
             return sheet;
+        }
+
+        private HSSFWorkbook GetWorkbook()
+        {
+            if (_workbook == null)
+                _workbook = new HSSFWorkbook(WorkbookFileStream);
+
+            return _workbook;
         }
     }
 }

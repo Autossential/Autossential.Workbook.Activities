@@ -10,7 +10,7 @@ namespace Autossential.Workbook.Activities
     public sealed class GetHyperlinks : WorkbookActivity<string[]>
     {
         public InArgument<string> SheetName { get; set; } = "Sheet1";
-        public InArgument<string> Range { get; set; } = "A1:A2";
+        public InArgument<string> Range { get; set; }
 
         protected override void CacheMetadata(CodeActivityMetadata metadata)
         {
@@ -21,9 +21,13 @@ namespace Autossential.Workbook.Activities
         public override async Task<Action<AsyncCodeActivityContext>> ExecuteAsync(AsyncCodeActivityContext context, IWorkbookAdapter adapter, CancellationToken token)
         {
             var sheetName = SheetName.Get(context);
+            if (string.IsNullOrEmpty(sheetName))
+                throw new ArgumentException(nameof(SheetName), Resources.Validation_NullOrEmptyFormat(nameof(SheetName)));
+
             var range = Range.Get(context);
-            var hyperlinks = await adapter.GetHyperlinksAsync(sheetName, range);
-            return ctx => Result.Set(ctx, hyperlinks);
+            string[] hyperlinks = null;
+            await Task.Run(() => hyperlinks = adapter.GetHyperlinks(sheetName, range));
+            return ctx => Result.Set(ctx, hyperlinks ?? Array.Empty<string>());
         }
     }
 }

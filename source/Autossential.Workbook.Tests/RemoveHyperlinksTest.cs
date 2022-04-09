@@ -38,7 +38,7 @@ namespace Autossential.Workbook.Tests
         [DataRow(5, "A1:E5")]
         [DataRow(5, "")]
 
-        public async Task OLE2(int expectedRemovedLinks, string cellRange)
+        public void OLE2(int expectedRemovedLinks, string cellRange)
         {
             InsertHyperlinks(_ole2file);
             var args = CreateRemoveHyperlinksArgs(_ole2file, cellRange);
@@ -47,7 +47,7 @@ namespace Autossential.Workbook.Tests
             Assert.AreEqual(expectedRemovedLinks, result.Get(p => p.Result));
             using (var adapter = new OLE2WorkbookAdapter(_ole2file))
             {
-                var links = await adapter.GetHyperlinksAsync("Sheet1", "");
+                var links = adapter.GetHyperlinks("Sheet1", "");
                 Assert.AreEqual(5 - expectedRemovedLinks, links.Length, "remaining links differ");
             }
         }

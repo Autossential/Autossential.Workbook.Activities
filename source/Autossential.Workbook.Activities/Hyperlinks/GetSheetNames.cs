@@ -10,8 +10,9 @@ namespace Autossential.Workbook.Activities
     {
         public override async Task<Action<AsyncCodeActivityContext>> ExecuteAsync(AsyncCodeActivityContext context, IWorkbookAdapter adapter, CancellationToken token)
         {
-            var names = await adapter.GetSheetNamesAsync();
-            return ctx => Result.Set(ctx, names);
+            string[] names = null;
+            await Task.Run(() => names = adapter.GetSheetNames());
+            return ctx => Result.Set(ctx, names ?? Array.Empty<string>());
         }
     }
 }

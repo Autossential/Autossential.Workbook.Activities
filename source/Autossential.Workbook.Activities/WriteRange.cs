@@ -1,4 +1,5 @@
-﻿using Autossential.Workbook.Core.Adapters;
+﻿using Autossential.Workbook.Activities.Properties;
+using Autossential.Workbook.Core.Adapters;
 using System;
 using System.Activities;
 using System.Data;
@@ -11,16 +12,33 @@ namespace Autossential.Workbook.Activities
     {
         public InArgument<string> SheetName { get; set; }
         public InArgument<string> Cell { get; set; }
-        public InArgument<DataTable> Value { get; set; }
+        public InArgument<DataTable> InputDataTable { get; set; }
         public bool AddHeaders { get; set; }
         protected override bool CheckWorkbookPath => false;
+
+        protected override void CacheMetadata(CodeActivityMetadata metadata)
+        {
+            base.CacheMetadata(metadata);
+
+            if (SheetName == null) metadata.AddValidationError(Resources.Validation_ValueErrorFormat(nameof(SheetName)));
+            if (Cell == null) metadata.AddValidationError(Resources.Validation_ValueErrorFormat(nameof(Cell)));
+            if (InputDataTable == null) metadata.AddValidationError(Resources.Validation_ValueErrorFormat("DataTable"));
+        }
         public override async Task<Action<AsyncCodeActivityContext>> ExecuteAsync(AsyncCodeActivityContext context, IWorkbookAdapter adapter, CancellationToken token)
         {
             var sheetName = SheetName.Get(context);
-            var cell = Cell.Get(context);
-            var value = Value.Get(context);
+            if (string.IsNullOrEmpty(sheetName))
+                throw new ArgumentException(nameof(SheetName), Resources.Validation_NullOrEmptyFormat(nameof(SheetName)));
 
-            await adapter.WriteRangeAsync(sheetName, cell, value, AddHeaders);
+            var cell = Cell.Get(context);
+            if (string.IsNullOrEmpty(cell))
+                throw new ArgumentException(nameof(Cell), Resources.Validation_NullOrEmptyFormat(nameof(Cell)));
+
+            var dt = InputDataTable.Get(context);
+            if (dt == null)
+                throw new ArgumentNullException("DataTable");
+
+            await Task.Run(() => adapter.WriteRange(sheetName, cell, dt, AddHeaders));
             return null;
         }
     }

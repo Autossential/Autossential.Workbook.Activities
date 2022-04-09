@@ -4,7 +4,6 @@ using System;
 using System.Data;
 using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Autossential.Workbook.Core.Adapters
 {
@@ -20,25 +19,20 @@ namespace Autossential.Workbook.Core.Adapters
             OpenFile();
         }
 
-        private void OpenFile()
-        {
-            if (!File.Exists(FilePath))
-            {
-                CreateNew();
-                IsNewWorkbook = true;
-            }
-
-            WorkbookFileStream = new FileStream(FilePath, FileMode.Open);
-        }
+        protected string FilePath { get; private set; }
 
         protected bool IsNewWorkbook { get; private set; }
 
-        protected string FilePath { get; private set; }
         protected Stream WorkbookFileStream { get; private set; }
-        public abstract Task<bool> AddHyperLinkAsync(string sheetName, string cellAddress, string label, string address, string tooltip);
-        public abstract void CreateNew();
 
-        public abstract void Dispose(bool disposing);
+        public abstract void AddHyperLink(string sheetName, string cell, string label, string link, string tooltip);
+
+        public virtual void Save()
+        {
+            if (_requiresSave)
+                GetSaveHandler().Invoke();
+        }
+        public abstract void CreateNew();
 
         public void Dispose()
         {
@@ -53,83 +47,62 @@ namespace Autossential.Workbook.Core.Adapters
             }
         }
 
-        public abstract Task<string[]> GetHyperlinksAsync(string sheetName, string range);
-
         public abstract Action GetSaveHandler();
 
-        public async Task<string[]> GetSheetNamesAsync()
+        public abstract void Dispose(bool disposing);
+
+        public abstract void FreezePanes(string sheetName, int cols, int rows);
+
+        public abstract string[] GetHyperlinks(string sheetName, string range);
+
+        public string[] GetSheetNames()
         {
-            return await Task.Run(() =>
+            var reader = GetExcelReader();
+            var sheetNames = new string[reader.ResultsCount];
+            var i = 0;
+            do
             {
-                var reader = GetExcelReader();
-                var sheetNames = new string[reader.ResultsCount];
-                var i = 0;
-                do
-                {
-                    sheetNames[i++] = reader.Name;
-                } while (reader.NextResult());
-                return sheetNames;
-            });
+                sheetNames[i++] = reader.Name;
+            } while (reader.NextResult());
+            return sheetNames;
         }
 
-        public virtual async Task<DataTable> ReadRangeAsync(string sheetName, string range, bool addHeaders)
+        public DataTable ReadRange(string sheetName, string range, bool addHeaders)
         {
-            return await Task.Run(() =>
+            var reader = GetExcelReader();
+
+            var dt = new DataTable();
+            var addr = new RangeAddress(range);
+            if (!addr.First.IsValid)
+                throw new ArgumentException("The range is not valid " + range, nameof(range));
+
+            do
             {
-                var reader = GetExcelReader();
-
-                var dt = new DataTable();
-                var addr = new RangeAddress(range);
-                if (!addr.First.IsValid)
-                    throw new ArgumentException("The range is not valid " + range, nameof(range));
-
-                do
+                if (reader.Name.Equals(sheetName, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (reader.Name.Equals(sheetName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        addr.Last.SetDefault(reader.FieldCount, reader.RowCount);
+                    addr.Last.SetDefault(reader.FieldCount, reader.RowCount);
 
-                        var headers = GetHeaderValues(reader, addHeaders, addr);
-                        var values = GetDataValues(reader, addr, out Type[] colTypes);
-                        TrimEnd(ref values);
-                        BuildDataTable(dt, headers, values, colTypes);
-                        break;
-                    }
+                    var headers = GetHeaderValues(reader, addHeaders, addr);
+                    var values = GetDataValues(reader, addr, out Type[] colTypes);
+                    TrimEnd(ref values);
+                    BuildDataTable(dt, headers, values, colTypes);
+                    break;
+                }
+            } while (reader.NextResult());
 
-                } while (reader.NextResult());
-
-                return dt;
-            });
+            return dt;
         }
 
-        public abstract Task<int> RemoveHyperlinksAsync(string sheetName, string range);
+        public abstract int RemoveHyperLinks(string sheetName, string range);
+
         public void RequiresSave()
         {
             _requiresSave = true;
         }
 
-        public virtual void Save()
-        {
-            if (_requiresSave)
-                GetSaveHandler().Invoke();
-        }
-        protected IExcelDataReader GetExcelReader()
-        {
-            if (_reader == null)
-            {
-                _reader = ExcelReaderFactory.CreateReader(WorkbookFileStream, new ExcelReaderConfiguration
-                {
-                    LeaveOpen = true
-                });
-            }
-            else
-            {
-                _reader.Reset();
-            }
+        public abstract void WriteCell(string sheetName, string cell, object value);
 
-            WorkbookFileStream.Position = 0;
-            return _reader;
-        }
+        public abstract void WriteRange(string sheetName, string cell, DataTable dataTable, bool addHeaders);
 
         private static void BuildDataTable(DataTable dt, string[] headers, object[][] values, Type[] colTypes)
         {
@@ -156,33 +129,7 @@ namespace Autossential.Workbook.Core.Adapters
             return value;
         }
 
-        private static void TrimEnd(ref object[][] values)
-        {
-            var emptyCounter = 0;
-            foreach (var value in values)
-            {
-                var empty = true;
-                foreach (var v in value)
-                {
-                    if (v != null)
-                    {
-                        empty = false;
-                        break;
-                    }
-                }
-                if (empty)
-                {
-                    emptyCounter++;
-                    continue;
-                }
-                emptyCounter = 0;
-            }
-
-            if (emptyCounter > 0)
-                Array.Resize(ref values, values.Length - emptyCounter);
-        }
-
-        private object[][] GetDataValues(IExcelDataReader reader, RangeAddress ra, out Type[] types)
+        private static object[][] GetDataValues(IExcelDataReader reader, RangeAddress ra, out Type[] types)
         {
             types = new Type[ra.ColsUsed()];
             var values = new object[ra.RowsUsed()][];
@@ -224,7 +171,7 @@ namespace Autossential.Workbook.Core.Adapters
             return values;
         }
 
-        private string[] GetHeaderValues(IExcelDataReader reader, bool addHeaders, RangeAddress ra)
+        private static string[] GetHeaderValues(IExcelDataReader reader, bool addHeaders, RangeAddress ra)
         {
             var headers = new string[ra.ColsUsed()];
             if (addHeaders)
@@ -265,8 +212,59 @@ namespace Autossential.Workbook.Core.Adapters
             return headers;
         }
 
-        public abstract Task WriteRangeAsync(string sheetName, string cellAddress, DataTable value, bool addHeaders);
+        private static void TrimEnd(ref object[][] values)
+        {
+            var emptyCounter = 0;
+            foreach (var value in values)
+            {
+                var empty = true;
+                foreach (var v in value)
+                {
+                    if (v != null)
+                    {
+                        empty = false;
+                        break;
+                    }
+                }
+                if (empty)
+                {
+                    emptyCounter++;
+                    continue;
+                }
+                emptyCounter = 0;
+            }
 
-        public abstract Task WriteCellAsync(string sheetName, string cellAddress, object value);
+            if (emptyCounter > 0)
+                Array.Resize(ref values, values.Length - emptyCounter);
+        }
+
+        private IExcelDataReader GetExcelReader()
+        {
+            if (_reader == null)
+            {
+                _reader = ExcelReaderFactory.CreateReader(WorkbookFileStream, new ExcelReaderConfiguration
+                {
+                    LeaveOpen = true
+                });
+            }
+            else
+            {
+                _reader.Reset();
+            }
+
+            WorkbookFileStream.Position = 0;
+            return _reader;
+        }
+
+        private void OpenFile()
+        {
+            if (!File.Exists(FilePath))
+            {
+                CreateNew();
+                IsNewWorkbook = true;
+            }
+
+            WorkbookFileStream = new FileStream(FilePath, FileMode.Open);
+        }
     }
 }

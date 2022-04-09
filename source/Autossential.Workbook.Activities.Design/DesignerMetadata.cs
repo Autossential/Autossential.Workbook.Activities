@@ -29,8 +29,8 @@ namespace Autossential.Workbook.Activities.Design
                        .Register<ReadRange, ReadRangeDesigner>(workbook)
                        .Register<WorkbookScope, WorkbookScopeDesigner>(workbook)
                        .Register<WriteRange, WriteRangeDesigner>(workbook)
-                       .Register<WriteCell, WriteCellDesigner>(workbook);
-
+                       .Register<WriteCell, WriteCellDesigner>(workbook)
+                       .Register<FreezeUnfreezePanes, FreezeUnfreezePanesDesigner>(workbook);
 
                 builder.Register<GetHyperlinks, GetHyperlinksDesigner>(hyperlinks)
                        .Register<InsertHyperlink, InsertHyperlinkDesigner>(hyperlinks)

@@ -1,11 +1,8 @@
 ﻿using Autossential.Shared.Tests;
-using Autossential.Workbook.Core;
+using Autossential.Workbook.Activities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Data;
 
 namespace Autossential.Workbook.Tests
 {
@@ -13,14 +10,30 @@ namespace Autossential.Workbook.Tests
     public class ReadRangeTest
     {
         [TestMethod]
-        //[DataRow(@"D:\Users\alexa\Downloads\Book1.xlsx", "C1")]
-        [DataRow(@"D:\Users\alexa\Downloads\Book1.xlsx", "")]
-        public void Read(string file, string address)
+        [DataRow("openxml.xlsx")]
+        [DataRow("ole2.xls")]
+        public void Read(string fileName)
         {
-            var path = file; //IOSamples.GetSamplePath("book.xlsx");
-            var adapter = WorkbookAdapterFactory.Create(path);
-            var dt = adapter.ReadRangeAsync("sheet1", address, true);
-            Assert.IsNotNull(dt);
+            var readRange = new ReadRange()
+            {
+                AddHeaders = true,
+                UseScope = false,
+            };
+
+            var result = WorkflowTester.Run(readRange, CreateArgs(IOSamples.GetSamplePath(fileName)));
+            var dt = (DataTable)result.Get(p => p.Result);
+            Assert.AreEqual(dt.Rows.Count, 10);
+            Assert.AreEqual(dt.Columns.Count, 6);
+        }
+
+        private static Dictionary<string, object> CreateArgs(string filePath)
+        {
+            return new Dictionary<string, object>
+            {
+                { nameof(ReadRange.WorkbookPath), filePath },
+                { nameof(ReadRange.SheetName), "Sheet1" },
+                { nameof(ReadRange.Range), "A1" }
+            };
         }
     }
 }

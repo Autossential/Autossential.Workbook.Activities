@@ -1,29 +1,30 @@
 ﻿using System;
 using System.Data;
-using System.Threading.Tasks;
 
 namespace Autossential.Workbook.Core.Adapters
 {
     public interface IWorkbookAdapter : IDisposable
     {
-        Task<string[]> GetSheetNamesAsync();
-
-        Task<bool> AddHyperLinkAsync(string sheetName, string cellAddress, string label, string address, string tooltip);
-
-        Task<int> RemoveHyperlinksAsync(string sheetName, string range);
-
-        Task<string[]> GetHyperlinksAsync(string sheetName, string range);
-
-        Task<DataTable> ReadRangeAsync(string sheetName, string range, bool addHeaders);
-
-        Task WriteCellAsync(string sheetName, string cellAddress, object value);
-
-        Task WriteRangeAsync(string sheetName, string cellAddress, DataTable value, bool addHeaders);
-
-        void Save();
+        void AddHyperLink(string sheetName, string cell, string label, string link, string tooltip);
 
         void CreateNew();
 
         void Dispose(bool disposing);
+
+        void FreezePanes(string sheetName, int cols, int rows);
+
+        string[] GetHyperlinks(string sheetName, string range);
+
+        string[] GetSheetNames();
+
+        DataTable ReadRange(string sheetName, string range, bool addHeaders);
+
+        int RemoveHyperLinks(string sheetName, string range);
+
+        void Save();
+
+        void WriteCell(string sheetName, string cell, object value);
+
+        void WriteRange(string sheetName, string cell, DataTable dataTable, bool addHeaders);
     }
 }

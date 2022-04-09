@@ -129,6 +129,34 @@
     <value>Specifies the amount of time in milliseconds to wait for the activity to run before an error is thrown. The default value is 30000 (30s).</value>
     <comment>property description</comment>
   </data>
+  <data name="FreezeUnfreezePanes_Cols_Description" xml:space="preserve">
+    <value>The number of columns to freeze. Set 0 or leave empty to unfreeze all columns.</value>
+    <comment>property description</comment>
+  </data>
+  <data name="FreezeUnfreezePanes_Description" xml:space="preserve">
+    <value>Keep rows and columns visible while the rest of the worksheet scrolls.</value>
+    <comment>activity description</comment>
+  </data>
+  <data name="FreezeUnfreezePanes_DisplayName" xml:space="preserve">
+    <value>Freeze/Unfreeze Panes</value>
+    <comment>activity name</comment>
+  </data>
+  <data name="FreezeUnfreezePanes_ErrorMsg_MinValue" xml:space="preserve">
+    <value>The property '{0}' requires a value greater or equal to 0.</value>
+    <comment>error message</comment>
+  </data>
+  <data name="FreezeUnfreezePanes_Rows_Description" xml:space="preserve">
+    <value>The number of rows to freeze. Set 0 or leave empty to unfreeze all rows.</value>
+    <comment>property description</comment>
+  </data>
+  <data name="FreezeUnfreezePanes_SheetName_Description" xml:space="preserve">
+    <value>The sheet name.</value>
+    <comment>property description</comment>
+  </data>
+  <data name="FreezeUnfreezePanes_WorkbookPath_Description" xml:space="preserve">
+    <value>The workbook file path.</value>
+    <comment>property description</comment>
+  </data>
   <data name="GetHyperlinks_CellRange_Description" xml:space="preserve">
     <value>The cell range to look for hyperlinks.</value>
     <comment>property description</comment>
@@ -268,6 +296,10 @@
   <data name="ScopeAwareCodeActivity_UseScope" xml:space="preserve">
     <value>Uses the workbook instance given by Workbook Scope.</value>
     <comment>property description</comment>
+  </data>
+  <data name="Validation_NullOrEmpty" xml:space="preserve">
+    <value>The value for '{0}' is null or empty.</value>
+    <comment>validation</comment>
   </data>
   <data name="Validation_ScopeError" xml:space="preserve">
     <value>Cannot be used outside of {0} activity.</value>
