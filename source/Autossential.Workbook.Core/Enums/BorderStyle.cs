@@ -10,10 +10,9 @@
         Hair,
         Medium,
         MediumDashDot,
-        MediumDashDotDot,
         MediumDashed,
         None,
-        SlantDashDot,
+        SlantedDashDot,
         Thick,
         Thin
     }

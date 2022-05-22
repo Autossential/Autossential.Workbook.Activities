@@ -34,5 +34,9 @@ namespace Autossential.Workbook.Core.Adapters
         void FillColor(string sheetName, string range, Color[] colors, FillOrientation orientation);
 
         void DrawBorder(string sheetName, string range, Border border, BorderStyle style, Color color);
+
+        void RenameSheet(int sheetIndex, string newName);
+
+        void DeleteSheet(string sheetName);
     }
 }

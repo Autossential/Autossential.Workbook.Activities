@@ -11,6 +11,17 @@ namespace Autossential.Shared.Tests
     {
         private const string TEST_OUTPUT = "unit-tests";
 
+        public static string GetDownloadsFolder()
+            => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+
+        public static string CopyToDownloadsFolder(string source)
+        {
+            var target = Path.Combine(GetDownloadsFolder(), Path.GetFileName(source));
+            File.Copy(source, target, true);
+            return target;
+        }
+            
+
         public static string CreateFolder(string relativeFolderPath)
             => Directory.CreateDirectory(GetTestPath(relativeFolderPath)).FullName;
 
@@ -47,14 +58,17 @@ namespace Autossential.Shared.Tests
                 Directory.Delete(path, true);
         }
 
-        public static string ExportSample(string relativeSampleFile)
+        public static string ExportSample(string relativeSampleFile, string newFileName = null)
         {
             var samplesRoot = GetSamplesFolder();
             var source = Path.Combine(samplesRoot, relativeSampleFile);
             if (!File.Exists(source))
                 throw new FileNotFoundException(source);
 
-            var target = GetTestPath(relativeSampleFile);
+            if (newFileName == null)
+                newFileName = relativeSampleFile;
+
+            var target = GetTestPath(newFileName);
             CreateFolder(Path.GetDirectoryName(target));
             File.Copy(source, target, true);
 

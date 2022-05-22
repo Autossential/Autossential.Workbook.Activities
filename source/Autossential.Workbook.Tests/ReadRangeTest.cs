@@ -11,7 +11,7 @@ namespace Autossential.Workbook.Tests
     {
         [TestMethod]
         [DataRow("openxml.xlsx")]
-        [DataRow("ole2.xls")]
+   //     [DataRow("ole2.xls")]
         public void Read(string fileName)
         {
             var readRange = new ReadRange()

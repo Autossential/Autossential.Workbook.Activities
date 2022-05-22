@@ -53,8 +53,8 @@ namespace Autossential.Workbook.Core.Internals
         }
 
         public bool IsZeroBased { get; }
-        public int Row { get; private set; }
-        public int Col { get; private set; }
+        public int Row { get; set; }
+        public int Col { get; set; }
         public bool IsValid => IsZeroBased ? Math.Min(Row, Col) > -1 : Row * Col > 0;
         public override string ToString() => $"Col: {Col}; Row: {Row}; IsValid: {IsValid}";
 
@@ -66,13 +66,9 @@ namespace Autossential.Workbook.Core.Internals
             if ((IsValid && !IsDefault))
                 return;
 
-            Override(col, row);
-            IsDefault = true;
-        }
-        public void Override(int col, int row)
-        {
             Col = col;
             Row = row;
+            IsDefault = true;
         }
 
         public static CellAddress UseDefault(string address, bool zeroBasedIndex)
