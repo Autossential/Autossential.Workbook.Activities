@@ -36,7 +36,7 @@ namespace Autossential.Workbook.Core.Adapters
 
         protected bool IsNewWorkbook { get; private set; }
 
-        protected Stream WorkbookFileStream { get; private set; }
+        protected WorkbookFileStream WorkbookFileStream { get; private set; }
         public abstract int MaxRows { get; }
         public abstract bool IsOpenXml { get; }
 
@@ -90,7 +90,7 @@ namespace Autossential.Workbook.Core.Adapters
                 _reader?.Dispose();
 
                 if (WorkbookFileStream != null)
-                    WorkbookFileStream.Dispose();
+                    WorkbookFileStream.CloseWorkbook();
             }
             catch (Exception e)
             {
@@ -425,6 +425,7 @@ namespace Autossential.Workbook.Core.Adapters
         {
             if (_requiresSave)
             {
+                WorkbookFileStream.CloseWorkbook();
                 using (FileStream fs = new FileStream(FilePath, FileMode.Create, FileAccess.Write))
                 {
                     GetWorkbook().Write(fs);
@@ -791,7 +792,8 @@ namespace Autossential.Workbook.Core.Adapters
             if (!File.Exists(FilePath))
                 CreateNew();
 
-            WorkbookFileStream = new FileStream(FilePath, FileMode.Open);
+            //WorkbookFileStream = new FileStream(FilePath, FileMode.Open);
+            WorkbookFileStream = new WorkbookFileStream(FilePath, FileMode.Open);
         }
 
         public void RenameSheet(int sheetIndex, string newName)
