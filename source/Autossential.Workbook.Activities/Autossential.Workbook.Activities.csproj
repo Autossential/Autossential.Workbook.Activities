@@ -7,7 +7,6 @@
 		<!--<EnableDefaultCompileItems>false</EnableDefaultCompileItems>-->
 	</PropertyGroup>
 	<ItemGroup>
-	  <Compile Remove="ActivateSheet.cs" />
 	  <Compile Remove="AppendRange.cs" />
 	  <Compile Remove="Base\WorkbookActivity.cs" />
 	  <Compile Remove="DeleteSheet.cs" />
@@ -33,6 +32,8 @@
 	</ItemGroup>
 	<ItemGroup>
 		<EmbeddedResource Include="Resources\ActivitiesMetadata.json" />
+		<EmbeddedResource Include="Resources\Icons\GetActiveSheet.svg" />
+		<EmbeddedResource Include="Resources\Icons\ActivateSheet.svg" />
 		<EmbeddedResource Include="Resources\Icons\GetColumnCount.svg" />
 		<EmbeddedResource Include="Resources\Icons\ReadRange.svg" />
 		<EmbeddedResource Include="Resources\Icons\RenameSheet.svg" />

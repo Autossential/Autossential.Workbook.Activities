@@ -19,10 +19,7 @@ namespace Autossential.Workbook.Core
             var extension = Path.GetExtension(path).ToLowerInvariant();
             switch (extension)
             {
-                case ".xlsm": // macro enabled workbook
-                case ".xltm": // macro enabled template
                 case ".xlsx": // workbook
-                case ".xltx": // template
                     return new OpenXMLWorkbookProcessor(path);
                 case ".xls": // workbook
                     return new BIFF8WorkbookProcessor(path);

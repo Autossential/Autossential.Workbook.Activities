@@ -2,8 +2,10 @@
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
 using NPOI.Util;
+using Sylvan.Data.Excel;
 using System;
 using System.IO;
+using System.Linq;
 
 namespace Autossential.Workbook.Core.Processors
 {
@@ -31,7 +33,7 @@ namespace Autossential.Workbook.Core.Processors
                 return;
 
             WorkbookStream.SetLength(0);
-            _workbook.Write(WorkbookStream);
+            GetWorkbook().Write(WorkbookStream);
 
             var bytes = WorkbookStream.ToArray();
             File.WriteAllBytes(FilePath, bytes);
@@ -59,6 +61,52 @@ namespace Autossential.Workbook.Core.Processors
         {
             var index = Array.IndexOf(GetSheetNames(), fromSheetName);
             RenameSheet(index, toSheetName);
+        }
+
+        protected override ExcelDataReader GetReader(ExcelDataReaderOptions options = null) =>
+            ExcelDataReader.Create(WorkbookStream.Reset(), ExcelWorkbookType.Excel, options);
+
+        public override void DeleteSheet(string sheetName)
+        {
+            var wb = GetWorkbook();
+            var sheet = wb.GetSheet(sheetName);
+            if (sheet == null)
+                return;
+
+            wb.RemoveSheetAt(wb.GetSheetIndex(sheet));
+            wb.Write(WorkbookStream);
+
+            RequiresSave = true;
+        }
+
+        public override void ActivateSheet(string sheetName)
+        {
+            var index = GetWorkbook().GetSheetIndex(sheetName);
+            if (index == -1)
+                throw new ArgumentException("Sheet not found", nameof(sheetName));
+
+            ActivateSheet(index);
+        }
+
+        public override void ActivateSheet(int sheetIndex)
+        {
+            var wb = GetWorkbook();
+            if (sheetIndex < 0 || sheetIndex > wb.NumberOfSheets)
+                throw new ArgumentOutOfRangeException(nameof(sheetIndex), sheetIndex, "Sheet index is out of range");
+
+            wb.SetActiveSheet(sheetIndex);
+            wb.Write(WorkbookStream);
+
+            RequiresSave = true;
+        }
+
+        public override (int index, string name) GetActiveSheet()
+        {
+            var wb = GetWorkbook();
+            if (wb.ActiveSheetIndex >= 0)
+                return (wb.ActiveSheetIndex, wb.GetSheetName(wb.ActiveSheetIndex));
+
+            return (-1, null);
         }
     }
 }

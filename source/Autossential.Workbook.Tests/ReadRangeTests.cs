@@ -9,7 +9,7 @@ using System.Data;
 namespace Autossential.Workbook.Tests
 {
     [TestClass]
-    public class ReadRangeTests
+    public class ReadRange_Tests
     {
         [TestMethod]
         [DataRow("OXML_data.xlsx", "A1", true, 10, 6)]

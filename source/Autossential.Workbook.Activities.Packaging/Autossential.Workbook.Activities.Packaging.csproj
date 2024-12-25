@@ -25,10 +25,11 @@
 	</PropertyGroup>
 	
 	<ItemGroup>
-		<PackageReference Include="ExcelDataReader" />
-		<PackageReference Include="ExcelDataReader.DataSet" />
+		<PackageReference Include="Sylvan.Data" />
+		<PackageReference Include="Sylvan.Data.Excel" />
 		<PackageReference Include="System.Text.Encoding.CodePages" />
 		<PackageReference Include="DocumentFormat.OpenXml" />
+		<PackageReference Include="NPOI" />
 	</ItemGroup>
 
 

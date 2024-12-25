@@ -1,4 +1,5 @@
 ﻿using NPOI.SS.Formula.Functions;
+using System;
 
 namespace Autossential.Workbook.Core.Internals
 {
@@ -54,18 +55,23 @@ namespace Autossential.Workbook.Core.Internals
             return $"{Start.ToString()}:{End.ToString()}";
         }
 
-        public bool IsInRange(uint row, uint col) =>
+        public bool IsInRange(long row, long col) =>
             IsRowInRange(row) && IsColInRange(col);
 
-        public bool IsRowInRange(uint row) =>
+        public bool IsRowInRange(long row) =>
             row >= Start.Row &&
             row <= End.Row;
 
-        public bool IsColInRange(uint col) =>
+        public bool IsColInRange(long col) =>
             col >= Start.Col &&
             col <= End.Col;
 
         public override string ToString() => $"{GetRange()} (Start [row: {Start.Row}, col: {Start.Col}], End [row: {End.Row}, col: {End.Col}])";
-    }
 
+        public void ForEachColumn(Action<int, int> action)
+        {
+            for (uint col = Start.Col; col <= End.Col; col++)
+                action((int)col, (int)(col - Start.Col));
+        }
+    }
 }

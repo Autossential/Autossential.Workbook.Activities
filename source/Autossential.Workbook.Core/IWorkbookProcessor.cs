@@ -11,6 +11,10 @@ namespace Autossential.Workbook.Core
         DataTable ReadRange(string sheetName, string range, bool hasHeaders, bool useColumnDataType);
         void RenameSheet(int sheetIndex, string newSheetName);
         void RenameSheet(string fromSheetName, string toSheetName);
+        void DeleteSheet(string sheetName);
+        void ActivateSheet(string sheetName);
+        void ActivateSheet(int sheetIndex);
+        (int index, string name) GetActiveSheet();
         void Save();
     }
 }

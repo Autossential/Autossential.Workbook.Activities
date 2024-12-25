@@ -327,26 +327,50 @@
   </data>
   <data name="GetColumnCount_DisplayName" xml:space="preserve">
     <value>Get Column Count</value>
+    <comment>activity name</comment>
   </data>
   <data name="GetRowCount_DisplayName" xml:space="preserve">
     <value>Get Row Count</value>
+    <comment>activity name</comment>
   </data>
   <data name="GetColumnCount_Description" xml:space="preserve">
     <value>Returns the number of columns in use in the sheet.</value>
+    <comment>activity description</comment>
   </data>
   <data name="GetRowCount_Description" xml:space="preserve">
     <value>Returns the number of rows in use in the sheet.</value>
+    <comment>activity description</comment>
   </data>
   <data name="RenameSheet_DisplayName" xml:space="preserve">
     <value>Rename Sheet</value>
+    <comment>activity name</comment>
   </data>
   <data name="RenameSheet_Description" xml:space="preserve">
     <value>Renames a sheet name based on its index (zero-based).</value>
+    <comment>activity description</comment>
   </data>
   <data name="SaveWorkbook_DisplayName" xml:space="preserve">
     <value>Save Workbook</value>
+    <comment>activity name</comment>
   </data>
   <data name="SaveWorkbook_Description" xml:space="preserve">
     <value>Saves the changes to the workbook opened by Workbook Scope.</value>
+    <comment>activity description</comment>
+  </data>
+  <data name="ActivateSheet_DisplayName" xml:space="preserve">
+    <value>Activate Sheet</value>
+    <comment>activity name</comment>
+  </data>
+  <data name="ActivateSheet_Description" xml:space="preserve">
+    <value>Activates the specified sheet</value>
+    <comment>activity description</comment>
+  </data>
+  <data name="GetActiveSheet_DisplayName" xml:space="preserve">
+    <value>Get Active Sheet</value>
+    <comment>activity name</comment>
+  </data>
+  <data name="GetActiveSheet_Description" xml:space="preserve">
+    <value>Returns the index and name of the active sheet.</value>
+    <comment>activity description</comment>
   </data>
 </root>

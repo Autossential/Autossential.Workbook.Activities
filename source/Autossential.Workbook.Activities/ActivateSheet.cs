@@ -1,33 +1,43 @@
 ﻿using Autossential.Shared;
+using Autossential.Workbook.Activities.Extensions;
 using Autossential.Workbook.Activities.Properties;
-using Autossential.Workbook.Core.Adapters;
-using System;
 using System.Activities;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Autossential.Workbook.Activities
 {
-    public sealed class ActivateSheet : WorkbookActivity
+    public sealed class ActivateSheet : WorkbookCodeActivity
     {
-        public InArgument<string> SheetName { get; set; }
+        public InArgument Sheet { get; set; }
 
         protected override void CacheMetadata(CodeActivityMetadata metadata)
         {
             base.CacheMetadata(metadata);
 
-            if (SheetName == null)
+            if (Sheet == null)
             {
-                metadata.AddValidationError(Resources.Validation_ValueErrorFormat(nameof(SheetName)));
-                return;
+                metadata.AddValidationError(Resources.Validation_ValueErrorFormat(nameof(Sheet)));
+            }
+            else if (Sheet.IsArgumentTypeAnyCompatible<int, string>())
+            {
+                metadata.AddRuntimeArgument(Sheet, Sheet.ArgumentType, nameof(Sheet), true);
+            }
+            else
+            {
+                metadata.AddValidationError(Resources.Validation_TypeErrorFormat("int or string", nameof(Sheet)));
             }
         }
 
-        public override async Task<Action<AsyncCodeActivityContext>> ExecuteAsync(AsyncCodeActivityContext context, IWorkbookAdapter adapter, CancellationToken token)
+        protected override void Execute(CodeActivityContext context)
         {
-            var sheet = SheetName.Get(context);
-            await Task.Run(() => adapter.ActivateSheet(sheet));
-            return null;
+            var sheet = Sheet.Get(context);
+            if (sheet is string sheetName)
+            {
+                context.GetWorkbook().ActivateSheet(sheetName);
+            }
+            else if (sheet is int sheetIndex)
+            {
+                context.GetWorkbook().ActivateSheet(sheetIndex);
+            }
         }
     }
 }

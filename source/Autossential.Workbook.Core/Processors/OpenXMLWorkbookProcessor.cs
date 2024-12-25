@@ -1,6 +1,8 @@
 ﻿using Autossential.Workbook.Core.Internals;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
+using NPOI.SS.UserModel;
+using Sylvan.Data.Excel;
 using System;
 using System.IO;
 using System.Linq;
@@ -13,7 +15,7 @@ namespace Autossential.Workbook.Core.Processors
 
         public OpenXMLWorkbookProcessor(string filePath) : base(filePath)
         {
-            
+
         }
 
         public override void RenameSheet(int sheetIndex, string newSheetName)
@@ -34,6 +36,7 @@ namespace Autossential.Workbook.Core.Processors
 
         private void SaveInMemory()
         {
+            _document.WorkbookPart.Workbook.Save();
             _document.Save();
             _document.Close();
             _document = null;
@@ -62,6 +65,66 @@ namespace Autossential.Workbook.Core.Processors
         {
             var index = Array.IndexOf(GetSheetNames(), fromSheetName);
             RenameSheet(index, toSheetName);
+        }
+
+        protected override ExcelDataReader GetReader(ExcelDataReaderOptions options = null) =>
+            ExcelDataReader.Create(WorkbookStream.Reset(), ExcelWorkbookType.ExcelXml, options);
+
+        public override void DeleteSheet(string sheetName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void ActivateSheet(string sheetName)
+        {
+            var document = GetDocument();
+            var wbPart = document.WorkbookPart;
+            var wb = wbPart.Workbook;
+            var sheets = wb.Sheets;
+            int sheetIndex = sheets.Elements<Sheet>()
+                                   .ToList()
+                                   .FindIndex(sheet => sheet.Name == sheetName);
+
+            if (sheetIndex == -1)
+                throw new ArgumentException("Sheet not found", nameof(sheetName));
+
+            ActivateSheet(sheetIndex);
+        }
+
+        public override void ActivateSheet(int sheetIndex)
+        {
+            var document = GetDocument();
+            var wbPart = document.WorkbookPart;
+            var wb = wbPart.Workbook;
+            var sheets = wb.Sheets;
+            if (sheetIndex < 0 || sheetIndex >= sheets.Count())
+                throw new ArgumentOutOfRangeException(nameof(sheetIndex), sheetIndex, "Sheet index is out of range");
+
+            var workbookView = wb.BookViews?.OfType<WorkbookView>().FirstOrDefault();
+            if (workbookView == null)
+            {
+                workbookView = new WorkbookView();
+                wb.BookViews ??= new BookViews();
+                wb.BookViews.Append(workbookView);
+            }
+
+            workbookView.ActiveTab = (uint)sheetIndex;
+            SaveInMemory();
+            RequiresSave = true;
+        }
+
+        public override (int index, string name) GetActiveSheet()
+        {
+            var document = GetDocument();
+            WorkbookPart workbookPart = document.WorkbookPart;
+            var workbook = workbookPart.Workbook;
+            var workbookView = workbook.BookViews?.OfType<WorkbookView>().FirstOrDefault();
+            uint activeIndex = workbookView?.ActiveTab ?? 0;
+            Sheets sheets = workbook.Sheets;
+            if (sheets.ElementAt((int)activeIndex) is Sheet activeSheet)
+                return ((int)activeIndex, activeSheet.Name);
+
+            return (-1, null);
         }
     }
 }

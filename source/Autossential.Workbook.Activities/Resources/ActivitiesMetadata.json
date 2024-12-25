@@ -63,6 +63,24 @@
       "viewModelType": "Autossential.Workbook.Activities.ViewModels.SaveWorkbookViewModel",
       "displayNameKey": "SaveWorkbook_DisplayName",
       "descriptionKey": "SaveWorkbook_Description"
+    },
+    {
+      "fullName": "Autossential.Workbook.Activities.ActivateSheet",
+      "shortName": "ActivateSheet",
+      "categoryKey": "Autossential.Workbook",
+      "iconKey": "ActivateSheet.svg",
+      "viewModelType": "Autossential.Workbook.Activities.ViewModels.ActivateSheetViewModel",
+      "displayNameKey": "ActivateSheet_DisplayName",
+      "descriptionKey": "ActivateSheet_Description"
+    },
+    {
+      "fullName": "Autossential.Workbook.Activities.GetActiveSheet",
+      "shortName": "GetActiveSheet",
+      "categoryKey": "Autossential.Workbook",
+      "iconKey": "GetActiveSheet.svg",
+      "viewModelType": "Autossential.Workbook.Activities.ViewModels.GetActiveSheetViewModel",
+      "displayNameKey": "GetActiveSheet_DisplayName",
+      "descriptionKey": "GetActiveSheet_Description"
     }
   ]
 }

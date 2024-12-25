@@ -1,5 +1,6 @@
 ﻿using Autossential.Workbook.Core.Internals;
-using ExcelDataReader;
+using Sylvan.Data;
+using Sylvan.Data.Excel;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -11,7 +12,6 @@ namespace Autossential.Workbook.Core.Processors
 {
     public abstract class WorkbookProcessorBase : IWorkbookProcessor
     {
-        private IExcelDataReader _reader;
         protected WorkbookProcessorBase(string filePath)
         {
             FilePath = filePath;
@@ -39,10 +39,7 @@ namespace Autossential.Workbook.Core.Processors
                 return;
 
             if (disposing)
-            {
-                _reader?.Dispose();
                 WorkbookStream?.Dispose();
-            }
 
             _disposed = true;
         }
@@ -93,164 +90,213 @@ namespace Autossential.Workbook.Core.Processors
 
             do
             {
-                if (reader.Name == sheetName)
-                {
-                    CountColumns(reader, rangeRef, processedColumns);
-                    break;
-                }
+                if (reader.WorksheetName != sheetName)
+                    continue;
+
+                CountColumns(reader, rangeRef, processedColumns);
+                break;
 
             } while (reader.NextResult());
 
             return processedColumns.Count;
         }
 
-        public virtual int GetRowCount(string sheetName, string range)
+        public string[] GetSheetNames()
         {
-            ValidateSheetName(sheetName);
-
-            var rangeRef = ResolveRange(range);
-            int count = 0;
-            var reader = GetReader();
-
-            do
-            {
-                if (reader.Name == sheetName)
-                {
-                    count = CountRows(reader, rangeRef);
-                    break;
-                }
-            }
-            while (reader.NextResult());
-            return count;
+            using var reader = GetReader();
+            return reader.WorksheetNames.ToArray();
         }
 
-        public virtual string[] GetSheetNames()
+        public int GetRowCount(string sheetName, string range)
         {
-            var reader = GetReader();
-            var sheetNames = new string[reader.ResultsCount];
-            int i = 0;
+            ValidateSheetName(sheetName);
+            var rangeRef = ResolveRange(range);
+
+            using var reader = GetReader();
             do
             {
-                sheetNames[i++] = reader.Name;
+                if (reader.WorksheetName != sheetName)
+                    continue;
+
+                if (range == "A1" || !reader.HasRows)
+                    return reader.RowCount;
+
+                return CountRows(reader, rangeRef);
+
+            } while (reader.NextResult());
+
+            return 0;
+        }
+
+        private ExcelDataReaderOptions GetReaderOptions(bool hasHeaders, bool useColumnDataType)
+        {
+            ExcelDataReaderOptions options = null;
+
+            if (useColumnDataType)
+            {
+                using var r = GetReader();
+                var analyzer = new SchemaAnalyzer();
+                var result = analyzer.Analyze(r);
+                options = new ExcelDataReaderOptions { Schema = new ExcelSchema(hasHeaders, result.GetSchema().GetColumnSchema()) };
+                r.Close();
             }
-            while (reader.NextResult());
-            return sheetNames;
+            else
+            {
+                options = new ExcelDataReaderOptions { Schema = hasHeaders ? ExcelSchema.Dynamic : ExcelSchema.NoHeaders };
+            }
+
+            return options;
         }
 
         public virtual DataTable ReadRange(string sheetName, string range, bool hasHeaders, bool useColumnDataType)
         {
             ValidateSheetName(sheetName);
 
-            var rangeRef = ResolveRange(range);
             var index = Array.IndexOf(GetSheetNames(), sheetName);
             if (index == -1)
                 throw new ArgumentException("Sheet name not found", nameof(sheetName));
 
-            var reader = GetReader();
+            var rangeRef = ResolveRange(range);
 
-            var dataSet = reader.AsDataSet(new ExcelDataSetConfiguration
+            using var reader = GetReader(GetReaderOptions(hasHeaders, useColumnDataType));
+
+            var dt = new DataTable();
+
+            do
             {
-                FilterSheet = (_, sheetIndex) => sheetIndex == index,
-                UseColumnDataType = useColumnDataType,
-                ConfigureDataTable = (_) => new ExcelDataTableConfiguration
+                if (reader.WorksheetName != sheetName)
+                    continue;
+
+                if (range == "A1")
                 {
-                    UseHeaderRow = hasHeaders,
-                    FilterRow = (rowReader) => rangeRef.IsRowInRange((uint)rowReader.Depth + 1),
-                    FilterColumn = (_, columnIndex) => rangeRef.IsColInRange((uint)columnIndex + 1)
+                    dt.Load(reader);
+                    return dt;
                 }
-            });
 
-            if (dataSet.Tables.Count > 0)
-            {
-                var table = dataSet.Tables[sheetName];
-                if (!hasHeaders)
+                do
                 {
-                    for (int i = 0; i < table.Columns.Count; i++)
+                    if (!rangeRef.IsRowInRange(reader.RowNumber))
                     {
-                        table.Columns[i].ColumnName = "Col" + (i + 1);
+                        if (reader.RowNumber > rangeRef.End.Row)
+                            break;
+
+                        continue;
                     }
-                }
 
-                return table;
-            }
+                    if (dt.Columns.Count == 0)
+                    {
+                        rangeRef.ForEachColumn((col, index) =>
+                        {
+                            var value = reader.RowNumber == 1 ? reader.GetName(col - 1) : reader.GetValue(col - 1);
+                            if (hasHeaders)
+                            {
+                                dt.Columns.Add(value?.ToString());
+                            }
+                            else
+                            {
+                                dt.Columns.Add($"Col{index + 1}");
+                            }
+                        });
 
-            return new DataTable();
+                        if (hasHeaders)
+                            continue;
+                    }
+
+                    var row = dt.NewRow();
+                    rangeRef.ForEachColumn((col, index) => row[index] = reader.GetValue(col - 1));
+                    dt.Rows.Add(row);
+
+                } while (reader.Read());
+
+            } while (reader.NextResult());
+
+            return dt;
         }
 
-        protected IExcelDataReader GetReader() =>
-             ExcelReaderFactory.CreateReader(WorkbookStream.Reset(), new ExcelReaderConfiguration { LeaveOpen = true });
+        protected abstract ExcelDataReader GetReader(ExcelDataReaderOptions options = null);
 
-
-        private static void CountColumns(IExcelDataReader reader, RangeReference rangeRef, HashSet<int> processedColumns)
+        private static void CountColumns(ExcelDataReader reader, RangeReference rangeRef, HashSet<int> processedColumns)
         {
-            var row = 0;
             var emptyColumns = new HashSet<int>();
 
-            while (reader.Read())
-            {
-                ++row;
-                if (row < rangeRef.Start.Row) continue;
-                if (row > rangeRef.End.Row) break;
+            int colsCount = Math.Max(0, reader.FieldCount);
+            if (colsCount == 0)
+                colsCount = (int)rangeRef.End.Col;
 
-                var size = Math.Min(rangeRef.End.Col, reader.FieldCount);
+            do
+            {
+                if (reader.RowNumber < rangeRef.Start.Row) continue;
+                if (reader.RowNumber > rangeRef.End.Row) break;
+
+                var size = Math.Min(rangeRef.End.Col, colsCount);
                 for (int col = (int)rangeRef.Start.Col; col <= size; col++)
                 {
                     if (processedColumns.Contains(col))
                         continue;
 
-                    if (reader.GetValue(col - 1) != null)
+                    var value = reader.RowNumber == 1 ? reader.GetName(col - 1) : reader.GetValue(col - 1);
+
+                    if (value == null || value == DBNull.Value || (value is string valueStr && string.IsNullOrEmpty(valueStr)))
                     {
-                        processedColumns.Add(col);
-
-                        foreach (var c in emptyColumns.Where(emptyCol => emptyCol < col))
-                            processedColumns.Add(c);
-
-                        emptyColumns.RemoveWhere(c => c <= col);
-
-                        if (processedColumns.Count == (size - (rangeRef.Start.Col - 1)))
-                            return;
-
+                        emptyColumns.Add(col);
                         continue;
                     }
 
-                    emptyColumns.Add(col);
+                    processedColumns.Add(col);
+
+                    foreach (var c in emptyColumns.Where(emptyCol => emptyCol < col))
+                        processedColumns.Add(c);
+
+                    emptyColumns.RemoveWhere(c => c <= col);
+
+                    if (processedColumns.Count == (size - (rangeRef.Start.Col - 1)))
+                        return;
                 }
-            }
+            } while (reader.Read());
         }
 
-        private static int CountRows(IExcelDataReader reader, RangeReference rangeRef)
+        internal static int CountRows(ExcelDataReader reader, RangeReference rangeRef)
         {
-            int row = 0;
             var emptyRowCount = 0;
             int count = 0;
 
-            while (reader.Read())
-            {
-                ++row;
-                if (row < rangeRef.Start.Row) continue;
-                if (row > rangeRef.End.Row) break;
+            int colsCount = Math.Max(0, reader.FieldCount);
+            if (colsCount == 0)
+                colsCount = (int)rangeRef.End.Col;
 
-                var size = Math.Min(rangeRef.End.Col, reader.FieldCount);
+            do
+            {
+                if (reader.RowNumber < rangeRef.Start.Row) continue;
+                if (reader.RowNumber > rangeRef.End.Row) break;
+
+                var size = Math.Min(rangeRef.End.Col, colsCount);
                 for (int col = (int)rangeRef.Start.Col; col <= size; col++)
                 {
-                    if (reader.GetValue(col - 1) != null)
-                    {
-                        count += emptyRowCount + 1;
-                        emptyRowCount = 0;
-                        size = -1;
+                    var value = reader.RowNumber == 1 ? reader.GetName(col - 1) : reader.GetValue(col - 1);
 
-                        break;
-                    }
+                    if (value == null || value == DBNull.Value || (value is string valueStr && string.IsNullOrEmpty(valueStr)))
+                        continue;
+
+                    count += emptyRowCount + 1;
+                    emptyRowCount = 0;
+                    size = -1;
+
+                    break;
                 }
 
                 if (size != -1)
                     emptyRowCount++;
-            }
+
+            } while (reader.Read());
 
             return count;
         }
 
         public abstract void RenameSheet(int sheetIndex, string newSheetName);
         public abstract void RenameSheet(string fromSheetName, string toSheetName);
+        public abstract void DeleteSheet(string sheetName);
+        public abstract void ActivateSheet(string sheetName);
+        public abstract void ActivateSheet(int sheetIndex);
+        public abstract (int index, string name) GetActiveSheet();
     }
 }
