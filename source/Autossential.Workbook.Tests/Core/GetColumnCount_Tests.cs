@@ -11,18 +11,18 @@ namespace Autossential.Workbook.Tests.Core
     public class GetColumnCount_Tests
     {
         [TestMethod]
-        [DataRow("OXML_scatter.xlsx", "A1", 7)]
-        [DataRow("OXML_scatter.xlsx", "A1:E5", 4)]
-        [DataRow("OXML_scatter.xlsx", "A1:B5", 1)]
+        [DataRow("OXML_data.xlsx", "A1", 7)]
+        [DataRow("OXML_data.xlsx", "A1:E5", 4)]
+        [DataRow("OXML_data.xlsx", "A1:B5", 1)]
 
-        [DataRow("BIFF8_scatter.xls", "A1", 7)]
-        [DataRow("BIFF8_scatter.xls", "A1:E5", 4)]
-        [DataRow("BIFF8_scatter.xls", "A1:B5", 1)]
+        [DataRow("BIFF8_data.xls", "A1", 7)]
+        [DataRow("BIFF8_data.xls", "A1:E5", 4)]
+        [DataRow("BIFF8_data.xls", "A1:B5", 1)]
         public void GetColumnCount_SheetNameExists_ReturnColumnCount(string fileName, string range, int expectedCount)
         {
             var path = IOSamples.GetSamplePath(fileName);
             var workbook = WorkbookProcessorFactory.OpenOrCreate(path);
-            var columnsCount = workbook.GetColumnCount("Sheet1", range);
+            var columnsCount = workbook.GetColumnCount("Scattered", range);
             workbook.Dispose();
             Assert.AreEqual(expectedCount, columnsCount);
         }

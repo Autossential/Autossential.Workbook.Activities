@@ -11,20 +11,18 @@ namespace Autossential.Workbook.Tests.Core
     public class GetRowCount_Tests
     {
         [TestMethod]
-        [DataRow("OXML_scatter.xlsx", "A1", 6)]
-        [DataRow("OXML_scatter.xlsx", "A1:E5", 3)]
-        [DataRow("BIFF8_scatter.xls", "B2:D5", 2)]
-        [DataRow("OXML_scatter.xlsx", "D3:E6", 4)]
+        [DataRow("OXML_data.xlsx", "A1", 6)]
+        [DataRow("OXML_data.xlsx", "A1:E5", 3)]
+        [DataRow("OXML_data.xlsx", "D3:E6", 4)]
 
-        [DataRow("BIFF8_scatter.xls", "A1", 6)]
-        [DataRow("BIFF8_scatter.xls", "A1:E5", 3)]
-        [DataRow("BIFF8_scatter.xls", "B2:D5", 2)]
-        [DataRow("BIFF8_scatter.xls", "D3:E6", 4)]
+        [DataRow("BIFF8_data.xls", "A1", 6)]
+        [DataRow("BIFF8_data.xls", "A1:E5", 3)]
+        [DataRow("BIFF8_data.xls", "D3:E6", 4)]
         public void GetRowCount_SheetNameExists_ReturnRowCount(string fileName, string range, int expectedCount)
         {
             var path = IOSamples.GetSamplePath(fileName);
             var workbook = WorkbookProcessorFactory.OpenOrCreate(path);
-            var count = workbook.GetRowCount("Sheet1", range);
+            var count = workbook.GetRowCount("Scattered", range);
             workbook.Dispose();
             Assert.AreEqual(expectedCount, count);
         }

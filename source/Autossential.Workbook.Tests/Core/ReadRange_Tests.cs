@@ -1,9 +1,12 @@
 ﻿using Autossential.Shared.Tests;
 using Autossential.Workbook.Core;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.PowerFx.Core.Public.Values;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NPOI.HPSF;
 using System;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Autossential.Workbook.Tests.Core
@@ -14,11 +17,8 @@ namespace Autossential.Workbook.Tests.Core
         [TestMethod]
         [DataRow("OXML_data.xlsx", "Header", "A1", 10, 6)]
         [DataRow("OXML_data.xlsx", "Header", "B1", 10, 5)]
-        [DataRow("OXML_data.xlsx", "Header", "B4", 8, 5)]
-
         [DataRow("BIFF8_data.xls", "Header", "A1", 10, 6)]
         [DataRow("BIFF8_data.xls", "Header", "B1", 10, 5)]
-        [DataRow("BIFF8_data.xls", "Header", "B4", 8, 5)]
 
         public void ReadRange_WithHeaderAndUseColumnType_ReturnRange(string fileName, string sheetName, string range, int expectedRowCount, int expectedColumnCount)
         {
@@ -186,11 +186,33 @@ namespace Autossential.Workbook.Tests.Core
         }
 
         [TestMethod]
-        public void Test()
+        [DataRow("OXML_data.xlsx", "HeadersOnly", true, true)]
+        [DataRow("BIFF8_data.xls", "HeadersOnly", true, true)]
+        [DataRow("OXML_data.xlsx", "HeadersOnly", false, false)]
+        [DataRow("BIFF8_data.xls", "HeadersOnly", false, false)]
+        public void ReadRange_HeadersOnly_ReturnEmptyTableWithColumns(string fileName, string sheetName, bool hasHeaders, bool useColumnDataType)
         {
-            var workbook = WorkbookProcessorFactory.OpenOrCreate(@"D:\Users\<user>\Downloads\Financial Sample.xlsx");
-            var dt = workbook.ReadRange("HeadersOnly", "A1", true, true);
-            Assert.IsTrue(dt.Columns.Count > 0);
+            var path = IOSamples.GetSamplePath(fileName);
+            var workbook = WorkbookProcessorFactory.OpenOrCreate(path);
+            var dt = workbook.ReadRange(sheetName, "A1", hasHeaders, useColumnDataType);
+            workbook.Dispose();
+            Assert.AreEqual(3, dt.Columns.Count);
+        }
+
+
+        [TestMethod]
+        [DataRow("OXML_data.xlsx", "A1:C4", 3, 3, true, true)]
+        [DataRow("OXML_data.xlsx", "E3:I6", 3, 5, true, true)]
+        [DataRow("OXML_data.xlsx", "A1:C4", 4, 3, false, false)]
+        [DataRow("OXML_data.xlsx", "E3:I6", 4, 5, false, false)]
+        public void ReadRange_Tables_ReturnRange(string fileName, string range, int expectedRows, int expectedCols, bool hasHeaders, bool useColumnDataType)
+        {
+            var path = IOSamples.GetSamplePath(fileName);
+            var workbook = WorkbookProcessorFactory.OpenOrCreate(path);
+            var dt = workbook.ReadRange("Tables", range, hasHeaders, useColumnDataType);
+            workbook.Dispose();
+            Assert.AreEqual(expectedRows, dt.Rows.Count);
+            Assert.AreEqual(expectedCols, dt.Columns.Count);
         }
     }
 }

@@ -9,16 +9,15 @@ namespace Autossential.Workbook.Core.Extensions
     {
         public static void AddColumns(this DataTable dt, int startCol, int endCol, Func<int, int, string> columnNameHandler, ReadOnlyCollection<DbColumn> columnSchema)
         {
-            for (int i = 0; i <= endCol - startCol; i++)
+            for (int i = 0, j = startCol, k = j - 1; j <= endCol; i++, j++, k = j - 1)
             {
-                var colIndex = i + startCol - 1;
-                if (colIndex < columnSchema.Count)
+                if (k < columnSchema.Count)
                 {
-                    dt.Columns.Add(columnNameHandler(colIndex, i), columnSchema[colIndex].DataType);
+                    dt.Columns.Add(columnNameHandler(k, i), columnSchema[k].DataType);
                     continue;
                 }
 
-                dt.Columns.Add(columnNameHandler(colIndex, i), typeof(object));
+                dt.Columns.Add(columnNameHandler(k, i), typeof(object));
             }
         }
     }
