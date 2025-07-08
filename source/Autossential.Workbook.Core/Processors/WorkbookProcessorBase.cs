@@ -210,7 +210,7 @@ namespace Autossential.Workbook.Core.Processors
             int startRow = (int)rangeRef.Start.Row;
             int endRow = (int)rangeRef.End.Row;
             int startCol = (int)rangeRef.Start.Col;
-            int endCol = rangeRef.IsPartial ? reader.FieldCount : (int)rangeRef.End.Col;
+            int endCol = rangeRef.IsPartial ? reader.RowFieldCount : (int)rangeRef.End.Col;
 
             try
             {
@@ -233,7 +233,7 @@ namespace Autossential.Workbook.Core.Processors
                     maxColCount = AddRows(dt, startCol, endCol, reader, maxColCount);
                 }
 
-                if (dt.Columns.Count == 0)
+                if (endCol > 0 && dt.Columns.Count == 0)
                     AddHeadersToTable(dt, hasHeaders, startCol, endCol, startRow, reader);
             }
             catch (Exception)

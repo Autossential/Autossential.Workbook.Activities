@@ -225,5 +225,18 @@ namespace Autossential.Workbook.Tests.Core
             workbook.Dispose();
             Assert.AreEqual(5, dt.Columns.Count);
         }
+
+
+        [TestMethod]
+        public void ReadRange_EmtpySheet_ReturnsEmptyDataTable()
+        {
+            var path = IOSamples.GetSamplePath("OXML_data.xlsx");
+            var workbook = WorkbookProcessorFactory.OpenOrCreate(path);
+            var dt = workbook.ReadRange("EmptySheet", "A1", true, false);
+            workbook.Dispose();
+            Assert.IsNotNull(dt);
+            Assert.AreEqual(0, dt.Rows.Count);
+            Assert.AreEqual(0, dt.Columns.Count);
+        }
     }
 }
