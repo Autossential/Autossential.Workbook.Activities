@@ -38,8 +38,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Sylvan.Data" />
-		<PackageReference Include="Sylvan.Data.Excel" />
+		<PackageReference Include="ExcelDataReader" />
+		<PackageReference Include="ExcelDataReader.DataSet" />
 		<PackageReference Include="System.Text.Encoding.CodePages" />
 		<PackageReference Include="DocumentFormat.OpenXml" />
 		<PackageReference Include="NPOI" />
