@@ -129,13 +129,25 @@ namespace Autossential.Workbook.Core.Processors
             return count;
         }
 
+        private int GetSheetIndex(string sheetName)
+        {
+            var sheetNames = GetSheetNames();
+            for (int i = 0; i < sheetNames.Length; i++)
+            {
+                if (sheetNames[i].Equals(sheetName, StringComparison.OrdinalIgnoreCase))
+                    return i;
+            }
+            return -1;
+        }
+
 
         public virtual DataTable ReadRange(string sheetName, string range, bool hasHeaders, bool useColumnDataType)
         {
             ValidateSheetName(sheetName);
 
             var rangeRef = ResolveRange(range);
-            var index = Array.IndexOf(GetSheetNames(), sheetName);
+            var index = GetSheetIndex(sheetName);
+
             if (index == -1)
                 throw new ArgumentException("Sheet name not found", nameof(sheetName));
 

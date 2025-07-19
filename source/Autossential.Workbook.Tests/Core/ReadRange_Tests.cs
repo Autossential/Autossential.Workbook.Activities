@@ -233,5 +233,16 @@ namespace Autossential.Workbook.Tests.Core
             Assert.AreEqual(0, dt.Rows.Count);
             Assert.AreEqual(0, dt.Columns.Count);
         }
+
+        [TestMethod]
+        public void ReadRange_SheetNameCaseInsensitive_DoesNotThrowException()
+        {
+            var path = IOSamples.GetSamplePath("OXML_data.xlsx");
+            var workbook = WorkbookProcessorFactory.OpenOrCreate(path);
+            var dt1 = workbook.ReadRange("Header", "A1", true, false);
+            var dt2 = workbook.ReadRange("header", "A1", true, false);
+            workbook.Dispose();
+            Assert.AreEqual(dt1.Rows.Count, dt2.Rows.Count);
+        }
     }
 }
