@@ -42,6 +42,8 @@ namespace Autossential.Workbook.Core.Processors
         private void SaveInMemory()
         {
             RequiresSave = true;
+            if (_document == null)
+                return;
 
             _document.WorkbookPart.Workbook.Save();
             _document.Save();
@@ -50,6 +52,9 @@ namespace Autossential.Workbook.Core.Processors
         public override void Save()
         {
             SaveInMemory();
+            if(_document == null)
+                return; 
+
             _document.Close();
             _document = null;
 

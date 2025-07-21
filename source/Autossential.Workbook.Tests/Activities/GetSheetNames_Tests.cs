@@ -58,6 +58,7 @@ namespace Autossential.Workbook.Tests.Activities
                                 SheetNameOrIndex = new InArgument<int>(0),
                                 NewSheetName = "New"
                             },
+                            new SaveWorkbook(),
                             new GetSheetNames
                             {
                                 Result = new OutArgument<string[]>(env => dyn.Result.Get(env))
@@ -67,7 +68,8 @@ namespace Autossential.Workbook.Tests.Activities
                 }
             };
 
-            CollectionAssert.AreEqual(new[] { "New", "Sheet2", "Sheet3", "Sheet4" }, WorkflowInvoker.Invoke(dyn));
+            var result = WorkflowInvoker.Invoke(dyn);
+            CollectionAssert.AreEqual(new[] { "New", "Sheet2", "Sheet3", "Sheet4" }, result);
         }
     }
 }
