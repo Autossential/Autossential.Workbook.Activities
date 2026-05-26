@@ -280,7 +280,6 @@ namespace Autossential.Workbook.Activities.Core.Processors
 
                 var rows = rangeRef.End.Row - (rangeRef.Start.Row - 1) - (hasHeaders ? 1 : 0);
                 table.AddTrailingRows(rows);
-                table.RemoveTrailingRows(rows);
             }
             else
             {

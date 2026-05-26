@@ -50,18 +50,13 @@ namespace Autossential.Workbook.Activities.Extensions
             public void AddTrailingRows(int rows)
             {
                 for (int i = table.Rows.Count; i < rows; i++)
-                {
-                    var row = table.NewRow();
-                    table.Rows.Add(row);
-                }
+                    table.Rows.Add(table.NewRow());
             }
 
             public void AddTrailingColumns(int cols, int columnIndex, string columnPrefix)
             {
                 for (int i = table.Columns.Count; i < cols; i++)
-                {
                     table.Columns.Add($"{columnPrefix}{columnIndex++}", typeof(object));
-                }
             }
         }
     }
