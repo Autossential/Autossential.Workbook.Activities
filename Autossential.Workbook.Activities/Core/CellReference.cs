@@ -2,18 +2,12 @@
 
 namespace Autossential.Workbook.Activities.Core
 {
-    internal struct CellReference
+    internal class CellReference : IEquatable<CellReference>
     {
         public const int BIFF8_MAX_COLS = 256;
         public const int BIFF8_MAX_ROWS = 65_536;
         public const int OPENXML_MAX_COLS = 16_384;
         public const int OPENXML_MAX_ROWS = 1_048_576;
-
-        public CellReference()
-        {
-            Col = 1;
-            Row = 1;
-        }
 
         public CellReference(ExcelFileType type, string address) : this(type, ParseAddress(address))
         {
@@ -41,7 +35,7 @@ namespace Autossential.Workbook.Activities.Core
         }
 
         public int Col { get; }
-        public readonly bool IsValid => Row > 0 && Col > 0;
+        public bool IsValid => Row > 0 && Col > 0;
         public int Row { get; }
 
         public static CellReference Max(ExcelFileType type)
@@ -54,7 +48,7 @@ namespace Autossential.Workbook.Activities.Core
             };
         }
 
-        public readonly string GetColumnName()
+        public string GetColumnName()
         {
             if (Col == 0) return string.Empty;
 
@@ -72,7 +66,7 @@ namespace Autossential.Workbook.Activities.Core
             return columnName.ToString();
         }
 
-        public override readonly string ToString()
+        public override string ToString()
         {
             return $"{GetColumnName()}{Row}";
         }
@@ -110,5 +104,22 @@ namespace Autossential.Workbook.Activities.Core
 
             return (col, row);
         }
+
+        public bool Equals(CellReference other)
+        {
+            if (other is null) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return Row == other.Row && Col == other.Col;
+        }
+
+        public override bool Equals(object obj) => Equals(obj as CellReference);
+
+        public override int GetHashCode() => HashCode.Combine(Row, Col);
+
+        public static bool operator ==(CellReference left, CellReference right)
+            => EqualityComparer<CellReference>.Default.Equals(left, right);
+
+        public static bool operator !=(CellReference left, CellReference right)
+            => !(left == right);
     }
 }

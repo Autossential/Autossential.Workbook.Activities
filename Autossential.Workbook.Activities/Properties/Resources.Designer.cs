@@ -340,6 +340,97 @@ namespace Autossential.Workbook.Activities.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Reads a column of cells from a worksheet and returns the values as an array..
+        /// </summary>
+        public static string ReadColumn_Description {
+            get {
+                return ResourceManager.GetString("ReadColumn_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Read Column.
+        /// </summary>
+        public static string ReadColumn_DisplayName {
+            get {
+                return ResourceManager.GetString("ReadColumn_DisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Maximum number of cells to read from the column. If set to zero or less, all cells in the column are read..
+        /// </summary>
+        public static string ReadColumn_Limit_Description {
+            get {
+                return ResourceManager.GetString("ReadColumn_Limit_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Max Cells.
+        /// </summary>
+        public static string ReadColumn_Limit_DisplayName {
+            get {
+                return ResourceManager.GetString("ReadColumn_Limit_DisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Array of values read from the column..
+        /// </summary>
+        public static string ReadColumn_Result_Description {
+            get {
+                return ResourceManager.GetString("ReadColumn_Result_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Result.
+        /// </summary>
+        public static string ReadColumn_Result_DisplayName {
+            get {
+                return ResourceManager.GetString("ReadColumn_Result_DisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name of the worksheet to read from..
+        /// </summary>
+        public static string ReadColumn_SheetName_Description {
+            get {
+                return ResourceManager.GetString("ReadColumn_SheetName_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sheet Name.
+        /// </summary>
+        public static string ReadColumn_SheetName_DisplayName {
+            get {
+                return ResourceManager.GetString("ReadColumn_SheetName_DisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cell address (in range format) that defines the column to start reading.  
+        ///(Default: A1).
+        /// </summary>
+        public static string ReadColumn_StartingCell_Description {
+            get {
+                return ResourceManager.GetString("ReadColumn_StartingCell_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Starting Cell.
+        /// </summary>
+        public static string ReadColumn_StartingCell_DisplayName {
+            get {
+                return ResourceManager.GetString("ReadColumn_StartingCell_DisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Reads the value of a range from a spreadsheet as a DataTable. If the range is not specified, all used cells in the spreadsheet are read. If the range is specified as a cell, all used rows starting from that cell is read..
         /// </summary>
         public static string ReadRange_Description {
@@ -462,6 +553,97 @@ namespace Autossential.Workbook.Activities.Properties {
         public static string ReadRange_SheetName_DisplayName {
             get {
                 return ResourceManager.GetString("ReadRange_SheetName_DisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Reads a row of cells from a worksheet and returns the values as an array..
+        /// </summary>
+        public static string ReadRow_Description {
+            get {
+                return ResourceManager.GetString("ReadRow_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Read Row.
+        /// </summary>
+        public static string ReadRow_DisplayName {
+            get {
+                return ResourceManager.GetString("ReadRow_DisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Maximum number of cells to read from the row. If set to zero or less, all cells in the row are read..
+        /// </summary>
+        public static string ReadRow_Limit_Description {
+            get {
+                return ResourceManager.GetString("ReadRow_Limit_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Max Cells.
+        /// </summary>
+        public static string ReadRow_Limit_DisplayName {
+            get {
+                return ResourceManager.GetString("ReadRow_Limit_DisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Array of values read from the row..
+        /// </summary>
+        public static string ReadRow_Result_Description {
+            get {
+                return ResourceManager.GetString("ReadRow_Result_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Result.
+        /// </summary>
+        public static string ReadRow_Result_DisplayName {
+            get {
+                return ResourceManager.GetString("ReadRow_Result_DisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name of the worksheet to read from..
+        /// </summary>
+        public static string ReadRow_SheetName_Description {
+            get {
+                return ResourceManager.GetString("ReadRow_SheetName_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sheet Name.
+        /// </summary>
+        public static string ReadRow_SheetName_DisplayName {
+            get {
+                return ResourceManager.GetString("ReadRow_SheetName_DisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cell address (in range format) that defines the row to start reading.  
+        ///(Default: A1).
+        /// </summary>
+        public static string ReadRow_StartingCell_Description {
+            get {
+                return ResourceManager.GetString("ReadRow_StartingCell_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Starting Cell.
+        /// </summary>
+        public static string ReadRow_StartingCell_DisplayName {
+            get {
+                return ResourceManager.GetString("ReadRow_StartingCell_DisplayName", resourceCulture);
             }
         }
         

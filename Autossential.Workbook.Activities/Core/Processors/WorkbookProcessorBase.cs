@@ -297,80 +297,107 @@ namespace Autossential.Workbook.Activities.Core.Processors
             var reader = GetReader();
             do
             {
-                if (reader.Name == sheetName)
+                if (reader.Name != sheetName)
+                    continue;
+
+                var row = 0;
+                while (reader.Read())
                 {
-                    var row = 0;
+                    ++row;
+                    if (row < cellRef.Row) continue;
 
-                    while (reader.Read())
-                    {
-                        ++row;
-                        if (row < cellRef.Row) continue;
-
-                        var col = cellRef.Col - 1;
-                        if (col < reader.FieldCount)
-                            return reader.GetValue(col);
-                    }
+                    var col = cellRef.Col - 1;
+                    if (col < reader.FieldCount)
+                        return reader.GetValue(col);
                 }
+
             } while (reader.NextResult());
             return null;
         }
 
-        public object[] ReadRow(string sheetName, string startingCell, int count)
+        public object[] ReadRow(string sheetName, string startingCell, int limit)
         {
             ValidateSheetName(sheetName);
             var cell = ResolveCell(startingCell);
             var reader = GetReader();
 
-            var len = count <= 0 ? int.MaxValue : count - (cell.Col);
-
             do
             {
-                if (reader.Name == sheetName)
+                if (reader.Name != sheetName)
+                    continue;
+
+                if (limit <= 0)
+                    limit = int.MaxValue;
+
+                var lastNonEmptyValueIndex = 0;
+                var colIndex = cell.Col - 1;
+                var len = reader.FieldCount - colIndex;
+                var values = new object[len];
+
+                while (reader.Read())
                 {
-                    len = Math.Min(len, reader.FieldCount - (cell.Col));
-                    var values = new object[len];
+                    if (reader.Depth + 1 < cell.Row)
+                        continue;
 
-                    while (reader.Read())
+                    int index = 0;
+                    while (colIndex < len && index < limit)
                     {
-                        if (reader.Depth + 1 < cell.Row) continue;
-                        for (int c = cell.Col - 1, index = 0; c < len; c++)
-                            values[index++] = reader.GetValue(c);
+                        var value = reader.GetValue(colIndex);
+                        values[index++] = value;
 
-                        return values;
+                        if (value != null && !string.IsNullOrEmpty(value?.ToString()))
+                            lastNonEmptyValueIndex = index;
+
+                        colIndex++;
                     }
+
+                    if (lastNonEmptyValueIndex == len)
+                        return values;
+
+                    return values[..lastNonEmptyValueIndex];
                 }
+
             } while (reader.NextResult());
 
             return [];
         }
 
-        public object[] ReadColumn(string sheetName, string startingCell, int count)
+        public object[] ReadColumn(string sheetName, string startingCell, int limit)
         {
             ValidateSheetName(sheetName);
             var cell = ResolveCell(startingCell);
             var reader = GetReader();
-            var len = count <= 0 ? int.MaxValue : count - (cell.Row - 1);
-            var col = cell.Col - 1;
 
             do
             {
-                if (reader.Name == sheetName)
+                if (reader.Name != sheetName)
+                    continue;
+
+                if (limit <= 0)
+                    limit = int.MaxValue;
+
+                var lastNonEmptyValueIndex = 0;
+                var rowIndex = cell.Row - 1;
+                var len = reader.RowCount - rowIndex;
+                var values = new object[len];
+                var colIndex = cell.Col - 1;
+                var index = 0;
+                while (reader.Read() && index < limit)
                 {
-                    if (col >= reader.FieldCount) return [];
+                    if (reader.Depth + 1 < cell.Row)
+                        continue;
 
-                    len = Math.Min(len, reader.RowCount - (cell.Row - 1));
-                    var values = new object[len];
-
-                    var index = 0;
-                    while (reader.Read())
-                    {
-                        if (reader.Depth + 1 < cell.Row) continue;
-                        values[index++] = reader.GetValue(col);
-
-                        if (index == len)
-                            return values;
-                    }
+                    var value = reader.GetValue(colIndex);
+                    values[index++] = value;
+                    if (value != null && !string.IsNullOrEmpty(value?.ToString()))
+                        lastNonEmptyValueIndex = index;
                 }
+
+                if (lastNonEmptyValueIndex == len)
+                    return values;
+
+                return values[..lastNonEmptyValueIndex];
+
             } while (reader.NextResult());
 
             return [];

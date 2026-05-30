@@ -297,6 +297,35 @@
     <value>Sheet Name</value>
     <comment>property name</comment>
   </data>
+  <data name="ReadRow_Description" xml:space="preserve">
+    <value>Reads a row of cells from a worksheet and returns the values as an array.</value>
+    <comment>activity description</comment>
+  </data>
+  <data name="ReadRow_DisplayName" xml:space="preserve">
+    <value>Read Row</value>
+    <comment>activity name</comment>
+  </data>
+  <data name="ReadRow_Limit_DisplayName" xml:space="preserve">
+    <value>Max Cells</value>
+    <comment>property name</comment>
+  </data>
+  <data name="ReadRow_SheetName_Description" xml:space="preserve">
+    <value>Name of the worksheet to read from.</value>
+    <comment>property description</comment>
+  </data>
+  <data name="ReadRow_SheetName_DisplayName" xml:space="preserve">
+    <value>Sheet Name</value>
+    <comment>property name</comment>
+  </data>
+  <data name="ReadRow_StartingCell_Description" xml:space="preserve">
+    <value>Cell address (in range format) that defines the row to start reading.  
+(Default: A1)</value>
+    <comment>property description</comment>
+  </data>
+  <data name="ReadRow_StartingCell_DisplayName" xml:space="preserve">
+    <value>Starting Cell</value>
+    <comment>property name</comment>
+  </data>
   <data name="WorkbookScope_Description" xml:space="preserve">
     <value>Opens a workbook and share its instance across the child activities.</value>
     <comment>activity description</comment>
@@ -332,5 +361,58 @@
   <data name="WorkbookScope_WorkbookPath_Placeholder" xml:space="preserve">
     <value>Enter the workbook path</value>
     <comment>placeholder</comment>
+  </data>
+  <data name="ReadRow_Limit_Description" xml:space="preserve">
+    <value>Maximum number of cells to read from the row. If set to zero or less, all cells in the row are read.</value>
+    <comment>property description</comment>
+  </data>
+  <data name="ReadColumn_DisplayName" xml:space="preserve">
+    <value>Read Column</value>
+    <comment>activity name</comment>
+  </data>
+  <data name="ReadColumn_Description" xml:space="preserve">
+    <value>Reads a column of cells from a worksheet and returns the values as an array.</value>
+    <comment>activity description</comment>
+  </data>
+  <data name="ReadColumn_Limit_DisplayName" xml:space="preserve">
+    <value>Max Cells</value>
+    <comment>property name</comment>
+  </data>
+  <data name="ReadColumn_Limit_Description" xml:space="preserve">
+    <value>Maximum number of cells to read from the column. If set to zero or less, all cells in the column are read.</value>
+    <comment>property description</comment>
+  </data>
+  <data name="ReadColumn_SheetName_DisplayName" xml:space="preserve">
+    <value>Sheet Name</value>
+    <comment>property name</comment>
+  </data>
+  <data name="ReadColumn_SheetName_Description" xml:space="preserve">
+    <value>Name of the worksheet to read from.</value>
+    <comment>property description</comment>
+  </data>
+  <data name="ReadColumn_StartingCell_DisplayName" xml:space="preserve">
+    <value>Starting Cell</value>
+    <comment>property name</comment>
+  </data>
+  <data name="ReadColumn_StartingCell_Description" xml:space="preserve">
+    <value>Cell address (in range format) that defines the column to start reading.  
+(Default: A1)</value>
+    <comment>property description</comment>
+  </data>
+  <data name="ReadRow_Result_Description" xml:space="preserve">
+    <value>Array of values read from the row.</value>
+    <comment>property description</comment>
+  </data>
+  <data name="ReadRow_Result_DisplayName" xml:space="preserve">
+    <value>Result</value>
+    <comment>property name</comment>
+  </data>
+  <data name="ReadColumn_Result_Description" xml:space="preserve">
+    <value>Array of values read from the column.</value>
+    <comment>property description</comment>
+  </data>
+  <data name="ReadColumn_Result_DisplayName" xml:space="preserve">
+    <value>Result</value>
+    <comment>property name</comment>
   </data>
 </root>

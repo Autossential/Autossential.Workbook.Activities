@@ -122,6 +122,83 @@
       ]
     },
     {
+      "fullName": "Autossential.Workbook.Activities.ReadColumn",
+      "shortName": "ReadColumn",
+      "displayNameKey": "ReadColumn_DisplayName",
+      "descriptionKey": "ReadColumn_Description",
+      "iconKey": "ReadColumn.svg",
+      "viewModelType": "Autossential.Workbook.Activities.ViewModels.ReadColumnViewModel",
+      "categoryKey": "ActivityCategories_Workbook",
+      "properties": [
+        {
+          "name": "SheetName",
+          "displayNameKey": "ReadColumn_SheetName_DisplayName",
+          "tooltipKey": "ReadColumn_SheetName_Description",
+          "isVisible": true,
+          "isRequired": true,
+          "category": {
+            "name": "Input",
+            "displayNameKey": "Categories_Input"
+          }
+        },
+        {
+          "name": "StartingCell",
+          "displayNameKey": "ReadColumn_StartingCell_DisplayName",
+          "tooltipKey": "ReadColumn_StartingCell_Description",
+          "isVisible": true,
+          "isRequired": false,
+          "category": {
+            "name": "Input",
+            "displayNameKey": "Categories_Input"
+          }
+        },
+        {
+          "name": "Limit",
+          "displayNameKey": "ReadColumn_Limit_DisplayName",
+          "tooltipKey": "ReadColumn_Limit_Description",
+          "isVisible": true,
+          "isRequired": false,
+          "category": {
+            "name": "Input",
+            "displayNameKey": "Categories_Input"
+          }
+        },
+        {
+          "name": "Result",
+          "displayNameKey": "ReadColumn_Result_DisplayName",
+          "tooltipKey": "ReadColumn_Result_Description",
+          "isVisible": true,
+          "isRequired": false,
+          "category": {
+            "name": "Output",
+            "displayNameKey": "Categories_Output"
+          }
+        },
+        {
+          "name": "ResultType",
+          "displayNameKey": "ReadColumn_ResultType_DisplayName",
+          "tooltipKey": "ReadColumn_ResultType_Description",
+          "isVisible": true,
+          "isRequired": false,
+          "category": {
+            "name": "Options",
+            "displayNameKey": "Categories_Options"
+          }
+        },
+        {
+          "name": "Result",
+          "displayNameKey": "ReadColumn_Result_DisplayName",
+          "tooltipKey": "ReadColumn_Result_Description",
+          "isVisible": true,
+          "isRequired": false,
+          "category": {
+            "name": "Output",
+            "displayNameKey": "Categories_Output"
+          }
+        }
+      ]
+    },
+    {
       "fullName": "Autossential.Workbook.Activities.ReadRange",
       "shortName": "ReadRange",
       "displayNameKey": "ReadRange_DisplayName",
@@ -211,6 +288,83 @@
           "name": "Result",
           "displayNameKey": "ReadRange_Result_DisplayName",
           "tooltipKey": "ReadRange_Result_Description",
+          "isVisible": true,
+          "isRequired": false,
+          "category": {
+            "name": "Output",
+            "displayNameKey": "Categories_Output"
+          }
+        }
+      ]
+    },
+    {
+      "fullName": "Autossential.Workbook.Activities.ReadRow",
+      "shortName": "ReadRow",
+      "displayNameKey": "ReadRow_DisplayName",
+      "descriptionKey": "ReadRow_Description",
+      "iconKey": "ReadRow.svg",
+      "viewModelType": "Autossential.Workbook.Activities.ViewModels.ReadRowViewModel",
+      "categoryKey": "ActivityCategories_Workbook",
+      "properties": [
+        {
+          "name": "SheetName",
+          "displayNameKey": "ReadRow_SheetName_DisplayName",
+          "tooltipKey": "ReadRow_SheetName_Description",
+          "isVisible": true,
+          "isRequired": true,
+          "category": {
+            "name": "Input",
+            "displayNameKey": "Categories_Input"
+          }
+        },
+        {
+          "name": "StartingCell",
+          "displayNameKey": "ReadRow_StartingCell_DisplayName",
+          "tooltipKey": "ReadRow_StartingCell_Description",
+          "isVisible": true,
+          "isRequired": false,
+          "category": {
+            "name": "Input",
+            "displayNameKey": "Categories_Input"
+          }
+        },
+        {
+          "name": "Limit",
+          "displayNameKey": "ReadRow_Limit_DisplayName",
+          "tooltipKey": "ReadRow_Limit_Description",
+          "isVisible": true,
+          "isRequired": false,
+          "category": {
+            "name": "Input",
+            "displayNameKey": "Categories_Input"
+          }
+        },
+        {
+          "name": "Result",
+          "displayNameKey": "ReadRow_Result_DisplayName",
+          "tooltipKey": "ReadRow_Result_Description",
+          "isVisible": true,
+          "isRequired": false,
+          "category": {
+            "name": "Output",
+            "displayNameKey": "Categories_Output"
+          }
+        },
+        {
+          "name": "ResultType",
+          "displayNameKey": "ReadRow_ResultType_DisplayName",
+          "tooltipKey": "ReadRow_ResultType_Description",
+          "isVisible": true,
+          "isRequired": false,
+          "category": {
+            "name": "Options",
+            "displayNameKey": "Categories_Options"
+          }
+        },
+        {
+          "name": "Result",
+          "displayNameKey": "ReadRow_Result_DisplayName",
+          "tooltipKey": "ReadRow_Result_Description",
           "isVisible": true,
           "isRequired": false,
           "category": {

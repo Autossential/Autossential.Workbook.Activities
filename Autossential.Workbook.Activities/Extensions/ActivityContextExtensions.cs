@@ -5,7 +5,7 @@ namespace Autossential.Workbook.Activities.Extensions
 {
     public static class ActivityContextExtensions
     {
-        public const string WorkbookInstancePropertyName = "WorkbookInstance";
+        public const string WorkbookInstancePropertyName = "_wbInst";
 
         extension(ActivityContext context)
         {

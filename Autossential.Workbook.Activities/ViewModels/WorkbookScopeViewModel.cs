@@ -17,7 +17,13 @@ namespace Autossential.Workbook.Activities.ViewModels
         {
             var api = GetWorkflowDesignApi();
             if (api.HasFeature(DesignFeatureKeys.ScopedActivities))
-                api.ScopedActivitiesService.SetScopedActivities(typeof(WorkbookScope), [typeof(ReadRange), typeof(GetRangeSize), typeof(ReadCell)]);
+                api.ScopedActivitiesService.SetScopedActivities(typeof(WorkbookScope), [
+                    typeof(ReadRange),
+                    typeof(GetRangeSize),
+                    typeof(ReadCell),
+                    typeof(ReadRow),
+                    typeof(ReadColumn)
+                 ]);
         }
 
         protected override void InitializeModel()

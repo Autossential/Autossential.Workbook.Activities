@@ -1,14 +1,7 @@
 ﻿namespace Autossential.Workbook.Activities.Core
 {
-    internal readonly struct RangeReference
+    internal class RangeReference : IEquatable<RangeReference>
     {
-        public RangeReference()
-        {
-            Start = new CellReference();
-            End = new CellReference();
-            Origin = RangeOrigin.Default;
-        }
-
         public RangeReference(CellReference start, CellReference end)
         {
             Start = start;
@@ -20,7 +13,7 @@
         {
             if (string.IsNullOrEmpty(range))
             {
-                Start = new CellReference();
+                Start = new CellReference(type, "A1");
                 End = CellReference.Max(type);
                 Origin = RangeOrigin.Default;
                 return;
@@ -56,5 +49,22 @@
 
         public bool IsRowInRange(int row) => row >= Start.Row && row <= End.Row;
         public bool IsColInRange(int col) => col >= Start.Col && col <= End.Col;
+
+        public bool Equals(RangeReference other)
+        {
+            if (other is null) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return Start.Equals(other.Start) && End.Equals(other.End);
+        }
+
+        public override bool Equals(object obj) => Equals(obj as RangeReference);
+
+        public override int GetHashCode() => HashCode.Combine(Start, End);
+
+        public static bool operator ==(RangeReference left, RangeReference right)
+            => EqualityComparer<RangeReference>.Default.Equals(left, right);
+
+        public static bool operator !=(RangeReference left, RangeReference right)
+            => !(left == right);
     }
 }
