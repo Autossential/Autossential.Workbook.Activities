@@ -34,7 +34,7 @@ namespace Autossential.Workbook.Activities.Tests.Activities
                 WorkbookPath = path,
                 Body = new ActivityAction<IWorkbookProcessor>
                 {
-                    Argument = new DelegateInArgument<IWorkbookProcessor>(ActivityContextExtensions.WorkbookInstancePropertyName),
+                    Argument = new DelegateInArgument<IWorkbookProcessor>(WorkbookScope.TAG),
                     Handler = new Sequence
                     {
                         Variables = { A1, B1, A2, B2 },
@@ -81,7 +81,7 @@ namespace Autossential.Workbook.Activities.Tests.Activities
                 WorkbookPath = path,
                 Body = new ActivityAction<IWorkbookProcessor>
                 {
-                    Argument = new DelegateInArgument<IWorkbookProcessor>(ActivityContextExtensions.WorkbookInstancePropertyName),
+                    Argument = new DelegateInArgument<IWorkbookProcessor>(WorkbookScope.TAG),
                     Handler = new Sequence
                     {
                         Activities =
