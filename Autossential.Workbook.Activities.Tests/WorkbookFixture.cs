@@ -1,4 +1,8 @@
-﻿using NPOI.SS.UserModel;
+﻿using Autossential.Workbook.Activities.Core;
+using NPOI.SS.UserModel;
+using System.Activities;
+using System.Activities.Statements;
+using System.Linq.Expressions;
 
 namespace Autossential.Workbook.Activities.Tests
 {
@@ -87,5 +91,51 @@ namespace Autossential.Workbook.Activities.Tests
 
         public string OpenXMLFilePath { get; set; }
         public string BinaryFilePath { get; set; }
+
+        public static T InvokeWorkbookScopeWith<T>(string workbookPath, Activity<T> activity, string tag = WorkbookScope.TAG)
+        {
+            var dyn = new DynamicActivity<T>();
+            activity.Result = new OutArgument<T>(env => dyn.Result.Get(env));
+            dyn.Implementation = () => new WorkbookScope
+            {
+                WorkbookPath = workbookPath,
+                Body = new ActivityAction<IWorkbookProcessor>
+                {
+                    Argument = new DelegateInArgument<IWorkbookProcessor>(tag),
+                    Handler = activity
+                }
+            };
+
+            return WorkflowInvoker.Invoke(dyn);
+        }
+
+        public static T InvokeWorkbookScopeWith<T>(string workbookPath, Variable[] variables, Activity[] activities, Expression<Func<ActivityContext, T>> outputHandler)
+        {
+            var dyn = new DynamicActivity<T>();
+            var handler = new Sequence();
+            foreach (var v in variables)
+                handler.Variables.Add(v);
+
+            foreach(var a in activities)
+                handler.Activities.Add(a);
+
+            handler.Activities.Add(new Assign<T>
+            {
+                To = new OutArgument<T>(env => dyn.Result.Get(env)),
+                Value = new InArgument<T>(outputHandler)
+            });
+
+            dyn.Implementation = () => new WorkbookScope
+            {
+                WorkbookPath = workbookPath,
+                Body = new ActivityAction<IWorkbookProcessor>
+                {
+                    Argument = new DelegateInArgument<IWorkbookProcessor>(WorkbookScope.TAG),
+                    Handler = handler
+                }
+            };
+
+            return WorkflowInvoker.Invoke(dyn);
+        }
     }
 }

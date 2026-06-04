@@ -11,8 +11,7 @@ namespace Autossential.Workbook.Activities.Extensions
             public IWorkbookProcessor GetWorkbookProcessor()
             {
                 var properties = context.DataContext.GetProperties();
-                var property = properties.Find(WorkbookScope.TAG, false);
-
+                var property = properties[WorkbookScope.TAG];
                 if (property == null)
                 {
                     foreach (PropertyDescriptor prop in properties)

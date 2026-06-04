@@ -1,6 +1,4 @@
 ﻿using Autossential.Workbook.Activities.Core;
-using NPOI.HSSF.Record;
-using System.Activities.Validation;
 using Xunit;
 
 namespace Autossential.Workbook.Activities.Tests.Unit

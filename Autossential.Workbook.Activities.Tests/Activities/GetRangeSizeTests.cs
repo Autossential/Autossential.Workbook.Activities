@@ -1,7 +1,4 @@
-﻿using Autossential.Workbook.Activities.Core;
-using Autossential.Workbook.Activities.Extensions;
-using System.Activities;
-using System.Activities.Statements;
+﻿using System.Activities;
 using Xunit;
 
 namespace Autossential.Workbook.Activities.Tests.Activities
@@ -25,36 +22,14 @@ namespace Autossential.Workbook.Activities.Tests.Activities
             var rowCount = new Variable<int>();
             var colCount = new Variable<int>();
 
-            var dyn = new DynamicActivity<Tuple<int, int>>();
-            dyn.Implementation = () => new WorkbookScope
+            var result = WorkbookFixture.InvokeWorkbookScopeWith(path, [rowCount, colCount], [new GetRangeSize
             {
-                WorkbookPath = path,
-                Body = new ActivityAction<IWorkbookProcessor>
-                {
-                    Argument = new DelegateInArgument<IWorkbookProcessor>(WorkbookScope.TAG),
-                    Handler = new Sequence
-                    {
-                        Variables = { rowCount, colCount },
-                        Activities =
-                        {
-                            new GetRangeSize
-                            {
-                                SheetName = "Sheet1",
-                                Range = range,
-                                RowCount = new OutArgument<int>(rowCount),
-                                ColumnCount = new OutArgument<int>(colCount)
-                            },
-                            new Assign<Tuple<int,int>>
-                            {
-                                To   = new OutArgument<Tuple<int,int>>(env => dyn.Result.Get(env)),
-                                Value = new InArgument<Tuple<int,int>>(env=> Tuple.Create(rowCount.Get(env),colCount.Get(env)))
-                            }
-                        }
-                    }
-                }
-            };
+                SheetName = "Sheet1",
+                Range = range,
+                RowCount = new OutArgument<int>(rowCount),
+                ColumnCount = new OutArgument<int>(colCount)
+            }], env => Tuple.Create(rowCount.Get(env), colCount.Get(env)));
 
-            var result = WorkflowInvoker.Invoke(dyn);
             Assert.Equal(rows, result.Item1);
             Assert.Equal(cols, result.Item2);
         }
@@ -72,36 +47,15 @@ namespace Autossential.Workbook.Activities.Tests.Activities
             var rowCount = new Variable<int>();
             var colCount = new Variable<int>();
 
-            var dyn = new DynamicActivity<Tuple<int, int>>();
-            dyn.Implementation = () => new WorkbookScope
+            var result = WorkbookFixture.InvokeWorkbookScopeWith(path, [rowCount, colCount], [new GetRangeSize
             {
-                WorkbookPath = path,
-                Body = new ActivityAction<IWorkbookProcessor>
-                {
-                    Argument = new DelegateInArgument<IWorkbookProcessor>(WorkbookScope.TAG),
-                    Handler = new Sequence
-                    {
-                        Variables = { rowCount, colCount },
-                        Activities =
-                        {
-                            new GetRangeSize
-                            {
-                                SheetName = sheetName,
-                                Range = range,
-                                RowCount = new OutArgument<int>(rowCount),
-                                ColumnCount = new OutArgument<int>(colCount)
-                            },
-                            new Assign<Tuple<int,int>>
-                            {
-                                To   = new OutArgument<Tuple<int,int>>(env => dyn.Result.Get(env)),
-                                Value = new InArgument<Tuple<int,int>>(env=> Tuple.Create(rowCount.Get(env),colCount.Get(env)))
-                            }
-                        }
-                    }
-                }
-            };
+                SheetName = sheetName,
+                Range = range,
+                RowCount = new OutArgument<int>(rowCount),
+                ColumnCount = new OutArgument<int>(colCount)
+            }],
+            env => Tuple.Create(rowCount.Get(env), colCount.Get(env)));
 
-            var result = WorkflowInvoker.Invoke(dyn);
             Assert.Equal(rows, result.Item1);
             Assert.Equal(cols, result.Item2);
         }
