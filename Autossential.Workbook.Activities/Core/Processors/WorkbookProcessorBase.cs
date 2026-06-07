@@ -13,12 +13,19 @@ namespace Autossential.Workbook.Activities.Core.Processors
             FilePath = filePath;
             Password = password;
             WorkbookStream = new MemoryStream();
+
             if (File.Exists(FilePath))
             {
                 var bytes = File.ReadAllBytes(FilePath);
                 WorkbookStream.Write(bytes, 0, bytes.Length);
                 WorkbookStream.Position = 0;
             }
+            else
+            {
+                CreateNew();
+                WorkbookStream.Position = 0;
+            }
+
             WorkbookHash = WorkbookStream.ComputeHash();
         }
 
@@ -26,7 +33,6 @@ namespace Autossential.Workbook.Activities.Core.Processors
         public string Password { get; }
         public MemoryStream WorkbookStream { get; }
         protected string WorkbookHash { get; set; }
-
         public void Dispose()
         {
             Save();
@@ -67,7 +73,7 @@ namespace Autossential.Workbook.Activities.Core.Processors
                         if (col > lastCol) lastCol = col;
                     }
 
-                    // Early exit: range inteira preenchida
+                    // Early exit: entire range filled
                     if (firstCol == rangeRef.Start.Col && lastCol == size)
                         return size - rangeRef.Start.Col + 1;
                 }
@@ -156,6 +162,7 @@ namespace Autossential.Workbook.Activities.Core.Processors
 
         protected abstract RangeReference ResolveRange(string range);
         protected abstract CellReference ResolveCell(string address);
+        protected abstract void CreateNew();
         private int GetSheetIndex(string sheetName)
         {
             var sheetNames = GetSheetNames();

@@ -1,4 +1,5 @@
 ﻿using Autossential.Workbook.Activities.Extensions;
+using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 using System.Data;
@@ -284,6 +285,27 @@ namespace Autossential.Workbook.Activities.Core.Processors
 
             UpdateCell(cell, value, dateStyle, timeStyle, dateTimeStyle);
             wsPart.Worksheet.Save();
+        }
+
+        protected override void CreateNew()
+        {
+            using var doc = SpreadsheetDocument.Create(WorkbookStream, SpreadsheetDocumentType.Workbook, autoSave: false);
+
+            var wbPart = doc.AddWorkbookPart();
+            wbPart.Workbook = new DocumentFormat.OpenXml.Spreadsheet.Workbook();
+
+            var wsPart = wbPart.AddNewPart<WorksheetPart>();
+            wsPart.Worksheet = new Worksheet(new SheetData());
+
+            var sheets = wbPart.Workbook.AppendChild(new Sheets());
+            sheets.AppendChild(new Sheet
+            {
+                Id = wbPart.GetIdOfPart(wsPart),
+                SheetId = 1,
+                Name = "Sheet1"
+            });
+
+            wbPart.Workbook.Save();
         }
     }
 }

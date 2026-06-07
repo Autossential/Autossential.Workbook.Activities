@@ -6,11 +6,11 @@ namespace Autossential.Workbook.Activities.Tests.Unit
 {
     public class WorkbookProcessorTests
     {
-        private string filePath = @"C:\Users\alexa\Downloads\Sandbox_copy.xls";
+        private string filePath = @"C:\Users\alexa\Downloads\SandboxNew.xls";
         public WorkbookProcessorTests()
         {
-            if (!File.Exists(filePath))
-                File.Copy(@"C:\Users\alexa\Downloads\Sandbox.xls", filePath);
+            //if (!File.Exists(filePath))
+            //    File.Copy(@"C:\Users\alexa\Downloads\Sandbox.xlsx", filePath);
         }
 
         [Theory]
@@ -89,14 +89,14 @@ namespace Autossential.Workbook.Activities.Tests.Unit
         {
             var dt = TableGenerator.GenerateTable(5, 5, typeof(string), typeof(int), typeof(DateTime), typeof(bool), typeof(double));
             var processor = WorkbookProcessorFactory.OpenOrCreate(filePath);
-            processor.WriteRange("Bug", dt, "B2", true);
+            processor.WriteRange("DSheet", dt, "B2", true);
             processor.Dispose();
         }
 
         [Theory]
-        [InlineData("Empty", "C2", "Test")]
-        [InlineData("Empty", "B5", 1578.75d)]
-        [InlineData("Empty", "D10", null)]
+        [InlineData("ASheet", "C2", "Test")]
+        [InlineData("BSheet", "B5", 1578.75d)]
+        [InlineData("CSheet", "D10", null)]
         public void WriteCell(string sheetName, string address, object value)
         {
             if (value == null)

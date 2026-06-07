@@ -168,5 +168,12 @@ namespace Autossential.Workbook.Activities.Core.Processors
 
             return (dateStyle, timeStyle, dateTimeStyle);
         }
+
+        protected override void CreateNew()
+        {
+            using var wb = new HSSFWorkbook();
+            wb.CreateSheet("Sheet1");
+            wb.Write(WorkbookStream, leaveOpen: true);
+        }
     }
 }
