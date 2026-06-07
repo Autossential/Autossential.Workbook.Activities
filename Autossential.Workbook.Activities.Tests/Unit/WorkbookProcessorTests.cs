@@ -1,15 +1,16 @@
 ﻿using Autossential.Workbook.Activities.Core;
+using Org.BouncyCastle.Bcpg.OpenPgp;
 using Xunit;
 
 namespace Autossential.Workbook.Activities.Tests.Unit
 {
     public class WorkbookProcessorTests
     {
-        private string filePath = @"C:\Users\alexa\Downloads\Sandbox_copy.xlsx";
+        private string filePath = @"C:\Users\alexa\Downloads\Sandbox_copy.xls";
         public WorkbookProcessorTests()
         {
             if (!File.Exists(filePath))
-                File.Copy(@"C:\Users\alexa\Downloads\Sandbox.xlsx", filePath);
+                File.Copy(@"C:\Users\alexa\Downloads\Sandbox.xls", filePath);
         }
 
         [Theory]
@@ -30,7 +31,7 @@ namespace Autossential.Workbook.Activities.Tests.Unit
         [InlineData("Cars", "A1:E10", 10, 5, false)]
         public void ReadRange(string sheetName, string range, int rows, int cols, bool hasHeaders)
         {
-            var processor = WorkbookProcessorFactory.OpenOrCreate(@"C:\Users\alexa\Downloads\Sandbox_copy.xlsx");
+            var processor = WorkbookProcessorFactory.OpenOrCreate(filePath);
             var table = processor.ReadRange(sheetName, range, hasHeaders, 1, 1);
             Assert.Equal(rows, table.Rows.Count);
             Assert.Equal(cols, table.Columns.Count);
@@ -55,7 +56,7 @@ namespace Autossential.Workbook.Activities.Tests.Unit
         [InlineData("Companies", "A1", 0, 7)]
         public void ReadRow(string sheetName, string startingCell, int limit, int expectedCount)
         {
-            var processor = WorkbookProcessorFactory.OpenOrCreate(@"C:\Users\alexa\Downloads\Sandbox_copy.xlsx");
+            var processor = WorkbookProcessorFactory.OpenOrCreate(filePath);
             var values = processor.ReadRow(sheetName, startingCell, limit);
             Assert.Equal(expectedCount, values.Length);
         }
@@ -78,7 +79,7 @@ namespace Autossential.Workbook.Activities.Tests.Unit
         [InlineData("Companies", "A1", 0, 11)]
         public void ReadColumn(string sheetName, string startingCell, int limit, int expectedCount)
         {
-            var processor = WorkbookProcessorFactory.OpenOrCreate(@"C:\Users\alexa\Downloads\Sandbox_copy.xlsx");
+            var processor = WorkbookProcessorFactory.OpenOrCreate(filePath);
             var values = processor.ReadColumn(sheetName, startingCell, limit);
             Assert.Equal(expectedCount, values.Length);
         }
@@ -87,9 +88,22 @@ namespace Autossential.Workbook.Activities.Tests.Unit
         public void WriteRange()
         {
             var dt = TableGenerator.GenerateTable(5, 5, typeof(string), typeof(int), typeof(DateTime), typeof(bool), typeof(double));
-            var processor = WorkbookProcessorFactory.OpenOrCreate(@"C:\Users\alexa\Downloads\Sandbox_copy.xlsx");
+            var processor = WorkbookProcessorFactory.OpenOrCreate(filePath);
             processor.WriteRange("Bug", dt, "B2", true);
-            processor.Save();
+            processor.Dispose();
+        }
+
+        [Theory]
+        [InlineData("Empty", "C2", "Test")]
+        [InlineData("Empty", "B5", 1578.75d)]
+        [InlineData("Empty", "D10", null)]
+        public void WriteCell(string sheetName, string address, object value)
+        {
+            if (value == null)
+                value = DateTime.Now;
+
+            var processor = WorkbookProcessorFactory.OpenOrCreate(filePath);
+            processor.WriteCell(sheetName, address, value);
             processor.Dispose();
         }
     }

@@ -430,6 +430,50 @@
     },
     {
       "categoryKey": "ActivityCategories_Workbook",
+      "descriptionKey": "WriteCell_Description",
+      "displayNameKey": "WriteCell_DisplayName",
+      "fullName": "Autossential.Workbook.Activities.WriteCell",
+      "iconKey": "WriteCell.svg",
+      "properties": [
+        {
+          "category": {
+            "displayNameKey": "Categories_Input",
+            "name": "Input"
+          },
+          "displayNameKey": "WriteCell_SheetName_DisplayName",
+          "isRequired": true,
+          "isVisible": true,
+          "name": "SheetName",
+          "tooltipKey": "WriteCell_SheetName_Description"
+        },
+        {
+          "category": {
+            "displayNameKey": "Categories_Input",
+            "name": "Input"
+          },
+          "displayNameKey": "WriteCell_Cell_DisplayName",
+          "isRequired": true,
+          "isVisible": true,
+          "name": "Cell",
+          "tooltipKey": "WriteCell_Cell_Description"
+        },
+        {
+          "category": {
+            "displayNameKey": "Categories_Input",
+            "name": "Input"
+          },
+          "displayNameKey": "WriteCell_Value_DisplayName",
+          "isRequired": true,
+          "isVisible": true,
+          "name": "Value",
+          "tooltipKey": "WriteCell_Value_Description"
+        }
+      ],
+      "shortName": "WriteCell",
+      "viewModelType": "Autossential.Workbook.Activities.ViewModels.WriteCellViewModel"
+    },
+    {
+      "categoryKey": "ActivityCategories_Workbook",
       "descriptionKey": "WriteRange_Description",
       "displayNameKey": "WriteRange_DisplayName",
       "fullName": "Autossential.Workbook.Activities.WriteRange",
@@ -462,11 +506,11 @@
             "displayNameKey": "Categories_Options",
             "name": "Options"
           },
-          "displayNameKey": "WriteRange_HasHeaders_DisplayName",
+          "displayNameKey": "WriteRange_AddHeaders_DisplayName",
           "isRequired": false,
           "isVisible": true,
-          "name": "HasHeaders",
-          "tooltipKey": "WriteRange_HasHeaders_Description"
+          "name": "AddHeaders",
+          "tooltipKey": "WriteRange_AddHeaders_Description"
         },
         {
           "category": {

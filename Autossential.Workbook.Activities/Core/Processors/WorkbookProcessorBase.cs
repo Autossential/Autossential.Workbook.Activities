@@ -421,5 +421,7 @@ namespace Autossential.Workbook.Activities.Core.Processors
                 WorkbookHash = WorkbookStream.ComputeHash();
             }
         }
+
+        public abstract void WriteCell(string sheetName, string address, object value);
     }
 }

@@ -461,4 +461,40 @@
     <value>Immediately saves all changes made to the workbook to disk, instead of waiting for the Use Workbook container to save them at the end. Use this activity when the workbook needs to be persisted early for operations outside of the current read/write workflow.</value>
     <comment>activity description</comment>
   </data>
+	<data name="WriteCell_DisplayName" xml:space="preserve">
+  <value>Write Cell</value>
+  <comment>activity name</comment>
+</data>
+	<data name="WriteCell_Description" xml:space="preserve">
+  <value>Writes a single value into a specific cell of an Excel worksheet. If the target sheet does not exist, a new one is created. Any existing value in the specified cell is overwritten.</value>
+  <comment>activity description</comment>
+</data>
+
+	<data name="WriteCell_SheetName_DisplayName" xml:space="preserve">
+  <value>Sheet Name</value>
+  <comment>property name</comment>
+</data>
+	<data name="WriteCell_SheetName_Description" xml:space="preserve">
+  <value>Name of the worksheet to write the cell value into. A new sheet is created if it does not exist.</value>
+  <comment>property description</comment>
+</data>
+
+	<data name="WriteCell_Cell_DisplayName" xml:space="preserve">
+  <value>Cell</value>
+  <comment>property name</comment>
+</data>
+	<data name="WriteCell_Cell_Description" xml:space="preserve">
+  <value>Address of the target cell (e.g., A1, B5) where the value will be written.</value>
+  <comment>property description</comment>
+</data>
+
+	<data name="WriteCell_Value_DisplayName" xml:space="preserve">
+  <value>Value</value>
+  <comment>property name</comment>
+</data>
+	<data name="WriteCell_Value_Description" xml:space="preserve">
+  <value>The content to be written into the specified cell. Any existing value in the cell is replaced.</value>
+  <comment>property description</comment>
+</data>
+
 </root>

@@ -745,6 +745,78 @@ namespace Autossential.Workbook.Activities.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Address of the target cell (e.g., A1, B5) where the value will be written..
+        /// </summary>
+        public static string WriteCell_Cell_Description {
+            get {
+                return ResourceManager.GetString("WriteCell_Cell_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cell.
+        /// </summary>
+        public static string WriteCell_Cell_DisplayName {
+            get {
+                return ResourceManager.GetString("WriteCell_Cell_DisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Writes a single value into a specific cell of an Excel worksheet. If the target sheet does not exist, a new one is created. Any existing value in the specified cell is overwritten..
+        /// </summary>
+        public static string WriteCell_Description {
+            get {
+                return ResourceManager.GetString("WriteCell_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Write Cell.
+        /// </summary>
+        public static string WriteCell_DisplayName {
+            get {
+                return ResourceManager.GetString("WriteCell_DisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name of the worksheet to write the cell value into. A new sheet is created if it does not exist..
+        /// </summary>
+        public static string WriteCell_SheetName_Description {
+            get {
+                return ResourceManager.GetString("WriteCell_SheetName_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sheet Name.
+        /// </summary>
+        public static string WriteCell_SheetName_DisplayName {
+            get {
+                return ResourceManager.GetString("WriteCell_SheetName_DisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The content to be written into the specified cell. Any existing value in the cell is replaced..
+        /// </summary>
+        public static string WriteCell_Value_Description {
+            get {
+                return ResourceManager.GetString("WriteCell_Value_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Value.
+        /// </summary>
+        public static string WriteCell_Value_DisplayName {
+            get {
+                return ResourceManager.GetString("WriteCell_Value_DisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Indicates if column names are written as headers..
         /// </summary>
         public static string WriteRange_AddHeaders_Description {

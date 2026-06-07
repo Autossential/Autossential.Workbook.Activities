@@ -15,169 +15,170 @@ namespace Autossential.Workbook.Activities.Core.Processors
         public override void WriteRange(string sheetName, DataTable data, string startingCell, bool addHeaders)
         {
             WorkbookStream.Position = 0;
-            using (var doc = SpreadsheetDocument.Open(WorkbookStream, true))
+            using var doc = SpreadsheetDocument.Open(WorkbookStream, true);
+            var wbPart = doc.WorkbookPart;
+            var sheet = wbPart.GetOrCreateSheet(sheetName);
+            var wsPart = (WorksheetPart)wbPart.GetPartById(sheet.Id.Value);
+
+            var sheetData = wsPart.Worksheet.GetFirstChild<SheetData>();
+            var cellRef = CellReference.OpenXml(startingCell);
+
+            int StartRow = cellRef.Row;
+            int StartCol = cellRef.Col;
+            uint firstRow = (uint)StartRow;
+            uint lastRow = (uint)(StartRow + data.Rows.Count);
+
+            var targetCols = Enumerable.Range(StartCol, data.Columns.Count).Select(CellReference.GetColumnName).ToHashSet();
+
+            // Indexes all existing rows once — O(n) total
+            var existingRows = sheetData.Elements<Row>().ToDictionary(r => (int)r.RowIndex.Value);
+
+            // Removes only cells within the column range in affected rows; preserves row and cells outside the column range
+            for (uint ri = firstRow; ri <= lastRow; ri++)
             {
-                var wbPart = doc.WorkbookPart;
-                var sheet = wbPart.GetOrCreateSheet(sheetName);
-                var wsPart = (WorksheetPart)wbPart.GetPartById(sheet.Id.Value);
+                if (!existingRows.TryGetValue((int)ri, out var existingRow))
+                    continue;
 
-                var sheetData = wsPart.Worksheet.GetFirstChild<SheetData>();
-                var cellRef = CellReference.OpenXml(startingCell);
+                existingRow.Elements<Cell>()
+                           .Where(c =>
+                           {
+                               var col = new string(c.CellReference?.Value?.TakeWhile(char.IsLetter).ToArray());
+                               return targetCols.Contains(col);
+                           })
+                           .ToList().ForEach(c => c.Remove());
+            }
 
-                int StartRow = cellRef.Row;
-                int StartCol = cellRef.Col;
-                uint firstRow = (uint)StartRow;
-                uint lastRow = (uint)(StartRow + data.Rows.Count);
+            // Anchors are located once to maintain SheetData order.
+            // The range cells have been removed, so the next cell (if any) is always a greater reference
+            var anchor = existingRows.Values.Where(r => r.RowIndex.Value > lastRow).OrderBy(r => r.RowIndex.Value).FirstOrDefault();
 
-                var targetCols = Enumerable.Range(StartCol, data.Columns.Count).Select(CellReference.GetColumnName).ToHashSet();
+            Row GetOrCreateRow(int rowIndex)
+            {
+                if (existingRows.TryGetValue(rowIndex, out var existing))
+                    return existing;
 
-                // Indexes all existing rows once — O(n) total
-                var existingRows = sheetData.Elements<Row>().ToDictionary(r => (int)r.RowIndex.Value);
+                var newRow = new Row { RowIndex = (uint)rowIndex };
+                if (anchor != null)
+                    sheetData.InsertBefore(newRow, anchor);
+                else
+                    sheetData.AppendChild(newRow);
 
-                // Removes only cells within the column range in affected rows; preserves row and cells outside the column range
-                for (uint ri = firstRow; ri <= lastRow; ri++)
-                {
-                    if (!existingRows.TryGetValue((int)ri, out var existingRow))
-                        continue;
+                existingRows[rowIndex] = newRow;
+                return newRow;
+            }
 
-                    existingRow.Elements<Cell>()
-                               .Where(c =>
-                               {
-                                   var col = new string(c.CellReference?.Value?.TakeWhile(char.IsLetter).ToArray());
-                                   return targetCols.Contains(col);
-                               })
-                               .ToList().ForEach(c => c.Remove());
-                }
+            // As the range cells have been removed, AppendChild is always safe — the only remaining cells in the row are outside the column range and have greater references, so inserting before them maintains order
+            void AppendCell(Row row, Cell cell)
+            {
+                var nextCell = row.Elements<Cell>().FirstOrDefault(c =>
+                    string.Compare(c.CellReference?.Value, cell.CellReference?.Value,
+                                   StringComparison.OrdinalIgnoreCase) > 0);
+                if (nextCell != null)
+                    row.InsertBefore(cell, nextCell);
+                else
+                    row.AppendChild(cell);
+            }
 
-                // Anchors are located once to maintain SheetData order. The range cells have been removed, so the next cell (if any) is always a greater reference
-                var anchor = existingRows.Values.Where(r => r.RowIndex.Value > lastRow).OrderBy(r => r.RowIndex.Value).FirstOrDefault();
+            Cell BuildCell(int rowIndex, int colIndex, object value, uint dateStyle, uint timeStyle, uint dateTimeStyle)
+            {
+                var cellRef = CellReference.GetColumnName(colIndex) + rowIndex;
+                var cell = new Cell { CellReference = cellRef };
+                UpdateCell(cell, value, dateStyle, timeStyle, dateTimeStyle);
+                return cell;
+            }
 
-                Row GetOrCreateRow(int rowIndex)
-                {
-                    if (existingRows.TryGetValue(rowIndex, out var existing))
-                        return existing;
+            var (dateStyle, timeStyle, dateTimeStyle) = EnsureStyles(wbPart);
+            if (addHeaders)
+            {
+                var headerRow = GetOrCreateRow(StartRow);
+                for (int c = 0; c < data.Columns.Count; c++)
+                    AppendCell(headerRow, BuildCell(StartRow, StartCol + c, data.Columns[c].ColumnName, dateStyle, timeStyle, dateTimeStyle));
+            }
 
-                    var newRow = new Row { RowIndex = (uint)rowIndex };
-                    if (anchor != null)
-                        sheetData.InsertBefore(newRow, anchor);
-                    else
-                        sheetData.AppendChild(newRow);
+            for (int r = 0; r < data.Rows.Count; r++)
+            {
+                int rowIndex = StartRow + 1 + r;
+                var row = GetOrCreateRow(rowIndex);
+                var dr = data.Rows[r];
+                for (int c = 0; c < data.Columns.Count; c++)
+                    AppendCell(row, BuildCell(rowIndex, StartCol + c, dr[c], dateStyle, timeStyle, dateTimeStyle));
+            }
 
-                    existingRows[rowIndex] = newRow;
-                    return newRow;
-                }
+            wsPart.Worksheet.Save();
+        }
 
-                // As the range cells have been removed, AppendChild is always safe — the only remaining cells in the row are outside the column range and have greater references, so inserting before them maintains order
-                void AppendCell(Row row, Cell cell)
-                {
-                    var nextCell = row.Elements<Cell>().FirstOrDefault(c =>
-                        string.Compare(c.CellReference?.Value, cell.CellReference?.Value,
-                                       StringComparison.OrdinalIgnoreCase) > 0);
-                    if (nextCell != null)
-                        row.InsertBefore(cell, nextCell);
-                    else
-                        row.AppendChild(cell);
-                }
+        private static void UpdateCell(Cell cell, object value, uint dateStyle, uint timeStyle, uint dateTimeStyle)
+        {
+            switch (value)
+            {
+                case null:
+                case DBNull:
+                    break;
 
-                var (dateStyle, timeStyle, dateTimeStyle) = EnsureStyles(wbPart);
+                case string s:
+                    cell.DataType = CellValues.InlineString;
+                    cell.InlineString = new InlineString(new Text(s));
+                    break;
 
-                Cell BuildCell(int rowIndex, int colIndex, object value)
-                {
-                    var cellRef = CellReference.GetColumnName(colIndex) + rowIndex;
-                    var cell = new Cell { CellReference = cellRef };
+                case bool b:
+                    cell.DataType = CellValues.Boolean;
+                    cell.CellValue = new CellValue(b ? "1" : "0");
+                    break;
 
-                    switch (value)
-                    {
-                        case null:
-                        case DBNull:
-                            break;
+                case DateTime dt:
+                    cell.CellValue = new CellValue(dt.ToOADate().ToString(CultureInfo.InvariantCulture));
+                    cell.StyleIndex = dt.TimeOfDay == TimeSpan.Zero
+                                        ? dateStyle
+                                        : dt.Date == DateTime.MinValue.Date
+                                            ? timeStyle
+                                            : dateTimeStyle;
+                    break;
 
-                        case string s:
-                            cell.DataType = CellValues.InlineString;
-                            cell.InlineString = new InlineString(new Text(s));
-                            break;
+                case DateTimeOffset dto:
+                    cell.CellValue = new CellValue(dto.DateTime.ToOADate().ToString(CultureInfo.InvariantCulture));
+                    cell.StyleIndex = dto.TimeOfDay == TimeSpan.Zero
+                                        ? dateStyle
+                                        : dto.Date == DateTime.MinValue.Date
+                                            ? timeStyle
+                                            : dateTimeStyle;
+                    break;
 
-                        case bool b:
-                            cell.DataType = CellValues.Boolean;
-                            cell.CellValue = new CellValue(b ? "1" : "0");
-                            break;
+                case TimeSpan ts:
+                    cell.CellValue = new CellValue(ts.TotalDays.ToString(CultureInfo.InvariantCulture));
+                    cell.StyleIndex = timeStyle;
+                    break;
 
-                        case DateTime dt:
-                            cell.CellValue = new CellValue(dt.ToOADate().ToString(CultureInfo.InvariantCulture));
-                            cell.StyleIndex = dt.TimeOfDay == TimeSpan.Zero
-                                                ? dateStyle
-                                                : dt.Date == DateTime.MinValue.Date
-                                                    ? timeStyle
-                                                    : dateTimeStyle;
-                            break;
+                case Guid g:
+                    cell.DataType = CellValues.InlineString;
+                    cell.InlineString = new InlineString(new Text(g.ToString()));
+                    break;
 
-                        case DateTimeOffset dto:
-                            cell.CellValue = new CellValue(dto.DateTime.ToOADate().ToString(CultureInfo.InvariantCulture));
-                            cell.StyleIndex = dto.TimeOfDay == TimeSpan.Zero
-                                                ? dateStyle
-                                                : dto.Date == DateTime.MinValue.Date
-                                                    ? timeStyle
-                                                    : dateTimeStyle;
-                            break;
+                case double d:
+                    cell.CellValue = new CellValue(d.ToString(CultureInfo.InvariantCulture));
+                    break;
+                case float f:
+                    cell.CellValue = new CellValue(((double)f).ToString(CultureInfo.InvariantCulture));
+                    break;
+                case decimal dec:
+                    cell.CellValue = new CellValue(dec.ToString(CultureInfo.InvariantCulture));
+                    break;
+                case int i:
+                    cell.CellValue = new CellValue(i.ToString(CultureInfo.InvariantCulture));
+                    break;
+                case long l:
+                    cell.CellValue = new CellValue(l.ToString(CultureInfo.InvariantCulture));
+                    break;
+                case short sh:
+                    cell.CellValue = new CellValue(sh.ToString(CultureInfo.InvariantCulture));
+                    break;
+                case byte by:
+                    cell.CellValue = new CellValue(by.ToString(CultureInfo.InvariantCulture));
+                    break;
 
-                        case TimeSpan ts:
-                            cell.CellValue = new CellValue(ts.TotalDays.ToString(CultureInfo.InvariantCulture));
-                            cell.StyleIndex = timeStyle;
-                            break;
-
-                        case Guid g:
-                            cell.DataType = CellValues.InlineString;
-                            cell.InlineString = new InlineString(new Text(g.ToString()));
-                            break;
-
-                        case double d:
-                            cell.CellValue = new CellValue(d.ToString(CultureInfo.InvariantCulture));
-                            break;
-                        case float f:
-                            cell.CellValue = new CellValue(((double)f).ToString(CultureInfo.InvariantCulture));
-                            break;
-                        case decimal dec:
-                            cell.CellValue = new CellValue(dec.ToString(CultureInfo.InvariantCulture));
-                            break;
-                        case int i:
-                            cell.CellValue = new CellValue(i.ToString(CultureInfo.InvariantCulture));
-                            break;
-                        case long l:
-                            cell.CellValue = new CellValue(l.ToString(CultureInfo.InvariantCulture));
-                            break;
-                        case short sh:
-                            cell.CellValue = new CellValue(sh.ToString(CultureInfo.InvariantCulture));
-                            break;
-                        case byte by:
-                            cell.CellValue = new CellValue(by.ToString(CultureInfo.InvariantCulture));
-                            break;
-
-                        default:
-                            cell.DataType = CellValues.InlineString;
-                            cell.InlineString = new InlineString(new Text(value.ToString() ?? string.Empty));
-                            break;
-                    }
-
-                    return cell;
-                }
-
-                if (addHeaders)
-                {
-                    var headerRow = GetOrCreateRow(StartRow);
-                    for (int c = 0; c < data.Columns.Count; c++)
-                        AppendCell(headerRow, BuildCell(StartRow, StartCol + c, data.Columns[c].ColumnName));
-                }
-
-                for (int r = 0; r < data.Rows.Count; r++)
-                {
-                    int rowIndex = StartRow + 1 + r;
-                    var row = GetOrCreateRow(rowIndex);
-                    var dr = data.Rows[r];
-                    for (int c = 0; c < data.Columns.Count; c++)
-                        AppendCell(row, BuildCell(rowIndex, StartCol + c, dr[c]));
-                }
-
-                wsPart.Worksheet.Save();
+                default:
+                    cell.DataType = CellValues.InlineString;
+                    cell.InlineString = new InlineString(new Text(value.ToString() ?? string.Empty));
+                    break;
             }
         }
 
@@ -233,6 +234,56 @@ namespace Autossential.Workbook.Activities.Core.Processors
             stylesPart.Stylesheet.Save();
 
             return (dateStyle, timeStyle, dateTimeStyle);
+        }
+
+        public override void WriteCell(string sheetName, string address, object value)
+        {
+            WorkbookStream.Position = 0;
+            using var doc = SpreadsheetDocument.Open(WorkbookStream, true);
+            var wbPart = doc.WorkbookPart;
+            var sheet = wbPart.GetOrCreateSheet(sheetName);
+            var wsPart = (WorksheetPart)wbPart.GetPartById(sheet.Id.Value);
+
+            var sheetData = wsPart.Worksheet.GetFirstChild<SheetData>();
+            var cellRef = CellReference.OpenXml(address);
+
+            var (dateStyle, timeStyle, dateTimeStyle) = EnsureStyles(wbPart);
+            var colLetter = CellReference.GetColumnName(cellRef.Col);
+            var rowIndex = cellRef.Row;
+
+            var existingRow = sheetData.Elements<Row>().FirstOrDefault(r => r.RowIndex?.Value == (uint)rowIndex);
+            if (existingRow == null)
+            {
+                existingRow = new Row { RowIndex = (uint)rowIndex };
+                var anchor = sheetData.Elements<Row>()
+                                       .FirstOrDefault(r => r.RowIndex?.Value > (uint)rowIndex);
+                if (anchor != null)
+                    sheetData.InsertBefore(existingRow, anchor);
+                else
+                    sheetData.AppendChild(existingRow);
+            }
+
+            var cell = existingRow.Elements<Cell>()
+                  .FirstOrDefault(c => c.CellReference?.Value == address);
+
+            if (cell == null)
+            {
+                cell = new Cell { CellReference = address };
+                var nextCell = existingRow.Elements<Cell>().FirstOrDefault(c =>
+                    string.Compare(c.CellReference?.Value, address,
+                                   StringComparison.OrdinalIgnoreCase) > 0);
+                if (nextCell != null)
+                    existingRow.InsertBefore(cell, nextCell);
+                else
+                    existingRow.AppendChild(cell);
+            }
+
+            cell.RemoveAllChildren();
+            cell.DataType = null;
+            cell.StyleIndex = null;
+
+            UpdateCell(cell, value, dateStyle, timeStyle, dateTimeStyle);
+            wsPart.Worksheet.Save();
         }
     }
 }

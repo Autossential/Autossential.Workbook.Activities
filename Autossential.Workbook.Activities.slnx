@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="Directory.Packages.props" />
+  </Folder>
   <Project Path="Autossential.Workbook.Activities.Packaging/Autossential.Workbook.Activities.Packaging.csproj" />
   <Project Path="Autossential.Workbook.Activities.Tests/Autossential.Workbook.Activities.Tests.csproj" />
   <Project Path="Autossential.Workbook.Activities/Autossential.Workbook.Activities.csproj" />
