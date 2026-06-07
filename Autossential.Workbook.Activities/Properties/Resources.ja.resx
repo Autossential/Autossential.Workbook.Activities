@@ -413,4 +413,84 @@
     <value>結果</value>
     <comment>property name</comment>
   </data>
+	<data name="SaveWorkbook_DisplayName" xml:space="preserve">
+    <value>ワークブックを保存</value>
+    <comment>activity name</comment>
+  </data>
+	<data name="SaveWorkbook_Description" xml:space="preserve">
+    <value>ワークブックコンテナの使用が最後に保存するのを待たずに、ワークブックに加えられたすべての変更をすぐにディスクに保存します。現在の読み取り/書き込みワークフローの外部の操作のためにワークブックを早期に永続化する必要がある場合は、このアクティビティを使用してください。</value>
+    <comment>activity description</comment>
+  </data>
+	<data name="WriteRange_DisplayName" xml:space="preserve">
+    <value>範囲を書き込み</value>
+    <comment>activity name</comment>
+  </data>
+	<data name="WriteRange_Description" xml:space="preserve">
+    <value>指定されたセル（デフォルトはA1）から開始して、DataTableをExcelワークシートに書き込みます。対象のシートが存在しない場合は、新しいシートが作成されます。対象範囲内の既存の値はすべて上書きされます。</value>
+    <comment>activity description</comment>
+  </data>
+	<data name="WriteRange_SheetName_DisplayName" xml:space="preserve">
+    <value>シート名</value>
+    <comment>property name</comment>
+  </data>
+	<data name="WriteRange_SheetName_Description" xml:space="preserve">
+    <value>データを書き込むワークシートの名前。</value>
+    <comment>property description</comment>
+  </data>
+	<data name="WriteRange_StartingCell_DisplayName" xml:space="preserve">
+    <value>開始セル</value>
+    <comment>property name</comment>
+  </data>
+	<data name="WriteRange_StartingCell_Description" xml:space="preserve">
+    <value>書き込みを開始する左上のセル。</value>
+    <comment>property description</comment>
+  </data>
+	<data name="WriteRange_AddHeaders_DisplayName" xml:space="preserve">
+    <value>ヘッダーを追加</value>
+    <comment>property name</comment>
+  </data>
+	<data name="WriteRange_AddHeaders_Description" xml:space="preserve">
+    <value>列名をヘッダーとして書き込むかどうかを示します。</value>
+    <comment>property description</comment>
+  </data>
+	<data name="WriteRange_DataTable_DisplayName" xml:space="preserve">
+    <value>データテーブル</value>
+    <comment>property name</comment>
+  </data>
+	<data name="WriteRange_DataTable_Description" xml:space="preserve">
+    <value>ワークシートに書き込むソースのDataTable。</value>
+    <comment>property description</comment>
+  </data>
+	<data name="WriteCell_DisplayName" xml:space="preserve">
+    <value>セルに書き込み</value>
+    <comment>activity name</comment>
+  </data>
+	<data name="WriteCell_Description" xml:space="preserve">
+    <value>Excelワークシートの特定のセルに単一の値を書き込みます。対象のシートが存在しない場合は、新しいシートが作成されます。指定されたセルの既存の値は上書きされます。</value>
+    <comment>activity description</comment>
+  </data>
+	<data name="WriteCell_SheetName_DisplayName" xml:space="preserve">
+    <value>シート名</value>
+    <comment>property name</comment>
+  </data>
+	<data name="WriteCell_SheetName_Description" xml:space="preserve">
+    <value>セルの値を書き込むワークシートの名前。存在しない場合は新しいシートが作成されます。</value>
+    <comment>property description</comment>
+  </data>
+	<data name="WriteCell_Cell_DisplayName" xml:space="preserve">
+    <value>セル</value>
+    <comment>property name</comment>
+  </data>
+	<data name="WriteCell_Cell_Description" xml:space="preserve">
+    <value>値を書き込む対象セルのアドレス（例：A1、B5）。</value>
+    <comment>property description</comment>
+  </data>
+	<data name="WriteCell_Value_DisplayName" xml:space="preserve">
+    <value>値</value>
+    <comment>property name</comment>
+  </data>
+	<data name="WriteCell_Value_Description" xml:space="preserve">
+    <value>指定されたセルに書き込まれる内容。セルの既存の値は置き換えられます。</value>
+    <comment>property description</comment>
+  </data>
 </root>

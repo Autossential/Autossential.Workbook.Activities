@@ -413,4 +413,84 @@
     <value>Ergebnis</value>
     <comment>property name</comment>
   </data>
+	<data name="SaveWorkbook_DisplayName" xml:space="preserve">
+    <value>Arbeitsmappe speichern</value>
+    <comment>activity name</comment>
+  </data>
+	<data name="SaveWorkbook_Description" xml:space="preserve">
+    <value>Speichert alle Änderungen an der Arbeitsmappe sofort auf der Festplatte, anstatt zu warten, bis der Use Workbook-Container sie am Ende speichert. Verwenden Sie diese Aktivität, wenn die Arbeitsmappe frühzeitig für Vorgänge außerhalb des aktuellen Lese-/Schreib-Workflows gespeichert werden muss.</value>
+    <comment>activity description</comment>
+  </data>
+	<data name="WriteRange_DisplayName" xml:space="preserve">
+    <value>Bereich schreiben</value>
+    <comment>activity name</comment>
+  </data>
+	<data name="WriteRange_Description" xml:space="preserve">
+    <value>Schreibt eine DataTable in ein Excel-Arbeitsblatt, beginnend mit einer angegebenen Zelle (Standard A1). Wenn das Zielblatt nicht existiert, wird ein neues erstellt. Alle vorhandenen Werte im Zielbereich werden überschrieben.</value>
+    <comment>activity description</comment>
+  </data>
+	<data name="WriteRange_SheetName_DisplayName" xml:space="preserve">
+    <value>Blattname</value>
+    <comment>property name</comment>
+  </data>
+	<data name="WriteRange_SheetName_Description" xml:space="preserve">
+    <value>Name des Arbeitsblatts, in das die Daten geschrieben werden sollen.</value>
+    <comment>property description</comment>
+  </data>
+	<data name="WriteRange_StartingCell_DisplayName" xml:space="preserve">
+    <value>Startzelle</value>
+    <comment>property name</comment>
+  </data>
+	<data name="WriteRange_StartingCell_Description" xml:space="preserve">
+    <value>Obere linke Zelle, an der das Schreiben beginnt.</value>
+    <comment>property description</comment>
+  </data>
+	<data name="WriteRange_AddHeaders_DisplayName" xml:space="preserve">
+    <value>Kopfzeilen hinzufügen</value>
+    <comment>property name</comment>
+  </data>
+	<data name="WriteRange_AddHeaders_Description" xml:space="preserve">
+    <value>Gibt an, ob Spaltennamen als Kopfzeilen geschrieben werden.</value>
+    <comment>property description</comment>
+  </data>
+	<data name="WriteRange_DataTable_DisplayName" xml:space="preserve">
+    <value>Datentabelle</value>
+    <comment>property name</comment>
+  </data>
+	<data name="WriteRange_DataTable_Description" xml:space="preserve">
+    <value>Quell-DataTable, die in das Arbeitsblatt geschrieben werden soll.</value>
+    <comment>property description</comment>
+  </data>
+	<data name="WriteCell_DisplayName" xml:space="preserve">
+    <value>Zelle schreiben</value>
+    <comment>activity name</comment>
+  </data>
+	<data name="WriteCell_Description" xml:space="preserve">
+    <value>Schreibt einen einzelnen Wert in eine bestimmte Zelle eines Excel-Arbeitsblatts. Wenn das Zielblatt nicht existiert, wird ein neues erstellt. Vorhandene Werte in der angegebenen Zelle werden überschrieben.</value>
+    <comment>activity description</comment>
+  </data>
+	<data name="WriteCell_SheetName_DisplayName" xml:space="preserve">
+    <value>Blattname</value>
+    <comment>property name</comment>
+  </data>
+	<data name="WriteCell_SheetName_Description" xml:space="preserve">
+    <value>Name des Arbeitsblatts, in das der Zellenwert geschrieben werden soll. Ein neues Blatt wird erstellt, wenn es nicht existiert.</value>
+    <comment>property description</comment>
+  </data>
+	<data name="WriteCell_Cell_DisplayName" xml:space="preserve">
+    <value>Zelle</value>
+    <comment>property name</comment>
+  </data>
+	<data name="WriteCell_Cell_Description" xml:space="preserve">
+    <value>Adresse der Zielzelle (z. B. A1, B5), in die der Wert geschrieben wird.</value>
+    <comment>property description</comment>
+  </data>
+	<data name="WriteCell_Value_DisplayName" xml:space="preserve">
+    <value>Wert</value>
+    <comment>property name</comment>
+  </data>
+	<data name="WriteCell_Value_Description" xml:space="preserve">
+    <value>Der Inhalt, der in die angegebene Zelle geschrieben werden soll. Vorhandene Werte in der Zelle werden ersetzt.</value>
+    <comment>property description</comment>
+  </data>
 </root>

@@ -413,4 +413,84 @@
     <value>结果</value>
     <comment>property name</comment>
   </data>
+	<data name="SaveWorkbook_DisplayName" xml:space="preserve">
+    <value>保存工作簿</value>
+    <comment>activity name</comment>
+  </data>
+	<data name="SaveWorkbook_Description" xml:space="preserve">
+    <value>立即将对工作簿所做的所有更改保存到磁盘，而不是等待使用工作簿容器在最后保存它们。当工作簿需要为当前读/写工作流之外的操作提前持久化时，请使用此活动。</value>
+    <comment>activity description</comment>
+  </data>
+	<data name="WriteRange_DisplayName" xml:space="preserve">
+    <value>写入范围</value>
+    <comment>activity name</comment>
+  </data>
+	<data name="WriteRange_Description" xml:space="preserve">
+    <value>从指定的单元格（默认为 A1）开始，将 DataTable 写入 Excel 工作表。如果目标工作表不存在，则会创建一个新工作表。目标范围内的所有现有值都将被覆盖。</value>
+    <comment>activity description</comment>
+  </data>
+	<data name="WriteRange_SheetName_DisplayName" xml:space="preserve">
+    <value>工作表名称</value>
+    <comment>property name</comment>
+  </data>
+	<data name="WriteRange_SheetName_Description" xml:space="preserve">
+    <value>要写入数据的工作表名称。</value>
+    <comment>property description</comment>
+  </data>
+	<data name="WriteRange_StartingCell_DisplayName" xml:space="preserve">
+    <value>起始单元格</value>
+    <comment>property name</comment>
+  </data>
+	<data name="WriteRange_StartingCell_Description" xml:space="preserve">
+    <value>开始写入的左上角单元格。</value>
+    <comment>property description</comment>
+  </data>
+	<data name="WriteRange_AddHeaders_DisplayName" xml:space="preserve">
+    <value>添加标题</value>
+    <comment>property name</comment>
+  </data>
+	<data name="WriteRange_AddHeaders_Description" xml:space="preserve">
+    <value>指示是否将列名作为标题写入。</value>
+    <comment>property description</comment>
+  </data>
+	<data name="WriteRange_DataTable_DisplayName" xml:space="preserve">
+    <value>数据表</value>
+    <comment>property name</comment>
+  </data>
+	<data name="WriteRange_DataTable_Description" xml:space="preserve">
+    <value>要写入工作表的源 DataTable。</value>
+    <comment>property description</comment>
+  </data>
+	<data name="WriteCell_DisplayName" xml:space="preserve">
+    <value>写入单元格</value>
+    <comment>activity name</comment>
+  </data>
+	<data name="WriteCell_Description" xml:space="preserve">
+    <value>将单个值写入 Excel 工作表的特定单元格。如果目标工作表不存在，则会创建一个新工作表。指定单元格中的任何现有值都将被覆盖。</value>
+    <comment>activity description</comment>
+  </data>
+	<data name="WriteCell_SheetName_DisplayName" xml:space="preserve">
+    <value>工作表名称</value>
+    <comment>property name</comment>
+  </data>
+	<data name="WriteCell_SheetName_Description" xml:space="preserve">
+    <value>要写入单元格值的工作表名称。如果不存在，则会创建一个新工作表。</value>
+    <comment>property description</comment>
+  </data>
+	<data name="WriteCell_Cell_DisplayName" xml:space="preserve">
+    <value>单元格</value>
+    <comment>property name</comment>
+  </data>
+	<data name="WriteCell_Cell_Description" xml:space="preserve">
+    <value>要写入值的目标单元格地址（例如 A1、B5）。</value>
+    <comment>property description</comment>
+  </data>
+	<data name="WriteCell_Value_DisplayName" xml:space="preserve">
+    <value>值</value>
+    <comment>property name</comment>
+  </data>
+	<data name="WriteCell_Value_Description" xml:space="preserve">
+    <value>要写入指定单元格的内容。单元格中的任何现有值都将被替换。</value>
+    <comment>property description</comment>
+  </data>
 </root>

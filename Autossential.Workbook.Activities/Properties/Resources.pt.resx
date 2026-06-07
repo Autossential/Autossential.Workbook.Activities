@@ -413,4 +413,84 @@
     <value>Resultado</value>
     <comment>property name</comment>
   </data>
+	<data name="SaveWorkbook_DisplayName" xml:space="preserve">
+    <value>Guardar livro de trabalho</value>
+    <comment>activity name</comment>
+  </data>
+	<data name="SaveWorkbook_Description" xml:space="preserve">
+    <value>Guarda imediatamente todas as alterações feitas no livro de trabalho no disco, em vez de esperar que o contentor Usar livro de trabalho as guarde no final. Utilize esta atividade quando o livro de trabalho precisar de ser persistido antecipadamente para operações fora do fluxo de trabalho atual de leitura/escrita.</value>
+    <comment>activity description</comment>
+  </data>
+	<data name="WriteRange_DisplayName" xml:space="preserve">
+    <value>Escrever intervalo</value>
+    <comment>activity name</comment>
+  </data>
+	<data name="WriteRange_Description" xml:space="preserve">
+    <value>Escreve um DataTable numa folha de Excel começando numa célula especificada (padrão A1). Se a folha de destino não existir, uma nova é criada. Todos os valores existentes no intervalo de destino são sobrescritos.</value>
+    <comment>activity description</comment>
+  </data>
+	<data name="WriteRange_SheetName_DisplayName" xml:space="preserve">
+    <value>Nome da folha</value>
+    <comment>property name</comment>
+  </data>
+	<data name="WriteRange_SheetName_Description" xml:space="preserve">
+    <value>Nome da folha de cálculo onde os dados serão escritos.</value>
+    <comment>property description</comment>
+  </data>
+	<data name="WriteRange_StartingCell_DisplayName" xml:space="preserve">
+    <value>Célula inicial</value>
+    <comment>property name</comment>
+  </data>
+	<data name="WriteRange_StartingCell_Description" xml:space="preserve">
+    <value>Célula superior esquerda onde a escrita começa.</value>
+    <comment>property description</comment>
+  </data>
+	<data name="WriteRange_AddHeaders_DisplayName" xml:space="preserve">
+    <value>Adicionar cabeçalhos</value>
+    <comment>property name</comment>
+  </data>
+	<data name="WriteRange_AddHeaders_Description" xml:space="preserve">
+    <value>Indica se os nomes das colunas são escritos como cabeçalhos.</value>
+    <comment>property description</comment>
+  </data>
+	<data name="WriteRange_DataTable_DisplayName" xml:space="preserve">
+    <value>Tabela de dados</value>
+    <comment>property name</comment>
+  </data>
+	<data name="WriteRange_DataTable_Description" xml:space="preserve">
+    <value>DataTable de origem a ser escrita na folha de cálculo.</value>
+    <comment>property description</comment>
+  </data>
+	<data name="WriteCell_DisplayName" xml:space="preserve">
+    <value>Escrever célula</value>
+    <comment>activity name</comment>
+  </data>
+	<data name="WriteCell_Description" xml:space="preserve">
+    <value>Escreve um único valor numa célula específica de uma folha de Excel. Se a folha de destino não existir, uma nova é criada. Qualquer valor existente na célula especificada é sobrescrito.</value>
+    <comment>activity description</comment>
+  </data>
+	<data name="WriteCell_SheetName_DisplayName" xml:space="preserve">
+    <value>Nome da folha</value>
+    <comment>property name</comment>
+  </data>
+	<data name="WriteCell_SheetName_Description" xml:space="preserve">
+    <value>Nome da folha de cálculo onde o valor da célula será escrito. Uma nova folha é criada se não existir.</value>
+    <comment>property description</comment>
+  </data>
+	<data name="WriteCell_Cell_DisplayName" xml:space="preserve">
+    <value>Célula</value>
+    <comment>property name</comment>
+  </data>
+	<data name="WriteCell_Cell_Description" xml:space="preserve">
+    <value>Endereço da célula de destino (por exemplo, A1, B5) onde o valor será escrito.</value>
+    <comment>property description</comment>
+  </data>
+	<data name="WriteCell_Value_DisplayName" xml:space="preserve">
+    <value>Valor</value>
+    <comment>property name</comment>
+  </data>
+	<data name="WriteCell_Value_Description" xml:space="preserve">
+    <value>O conteúdo a ser escrito na célula especificada. Qualquer valor existente na célula é substituído.</value>
+    <comment>property description</comment>
+  </data>
 </root>
