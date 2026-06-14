@@ -9,7 +9,7 @@ namespace Autossential.Workbook.Activities.Extensions
         {
             public Sheet GetOrCreateSheet(string sheetName)
             {
-                var sheet = wbPart.Workbook.Sheets.Elements<Sheet>().FirstOrDefault(sheet => sheet.Name == sheetName);
+                var sheet = wbPart.Workbook.Sheets.Elements<Sheet>().FirstOrDefault(sheet => sheetName.Equals(sheet.Name.Value, StringComparison.OrdinalIgnoreCase));
                 if (sheet == null)
                 {
                     var newWorksheetPart = wbPart.AddNewPart<WorksheetPart>();

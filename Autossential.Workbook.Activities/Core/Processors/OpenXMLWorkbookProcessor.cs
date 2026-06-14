@@ -9,14 +9,20 @@ namespace Autossential.Workbook.Activities.Core.Processors
 {
     internal class OpenXMLWorkbookProcessor(string filePath, string password) : WorkbookProcessorBase(filePath, password)
     {
+        private SpreadsheetDocument GetWorkbook()
+        {
+            WorkbookStream.Position = 0;
+            return SpreadsheetDocument.Open(WorkbookStream, true);
+        }
+
         protected override CellReference ResolveCell(string address) => CellReference.OpenXml(address);
 
         protected override RangeReference ResolveRange(string range) => RangeReference.OpenXml(range);
 
         public override void WriteRange(string sheetName, DataTable data, string startingCell, bool addHeaders)
         {
-            WorkbookStream.Position = 0;
-            using var doc = SpreadsheetDocument.Open(WorkbookStream, true);
+            ValidateSheetName(sheetName);
+            using var doc = GetWorkbook();
             var wbPart = doc.WorkbookPart;
             var sheet = wbPart.GetOrCreateSheet(sheetName);
             var wsPart = (WorksheetPart)wbPart.GetPartById(sheet.Id.Value);
@@ -24,17 +30,18 @@ namespace Autossential.Workbook.Activities.Core.Processors
             var sheetData = wsPart.Worksheet.GetFirstChild<SheetData>();
             var cellRef = CellReference.OpenXml(startingCell);
 
-            int StartRow = cellRef.Row;
-            int StartCol = cellRef.Col;
-            uint firstRow = (uint)StartRow;
-            uint lastRow = (uint)(StartRow + data.Rows.Count);
+            int startRow = cellRef.Row;
+            int startCol = cellRef.Col;
+            uint firstRow = (uint)startRow;
+            uint lastRow = (uint)(startRow + data.Rows.Count);
 
-            var targetCols = Enumerable.Range(StartCol, data.Columns.Count).Select(CellReference.GetColumnName).ToHashSet();
+            var targetCols = Enumerable.Range(startCol, data.Columns.Count)
+                                       .Select(CellReference.GetColumnName)
+                                       .ToHashSet();
 
-            // Indexes all existing rows once — O(n) total
-            var existingRows = sheetData.Elements<Row>().ToDictionary(r => (int)r.RowIndex.Value);
+            var existingRows = sheetData.Elements<Row>()
+                                        .ToDictionary(r => (int)r.RowIndex.Value);
 
-            // Removes only cells within the column range in affected rows; preserves row and cells outside the column range
             for (uint ri = firstRow; ri <= lastRow; ri++)
             {
                 if (!existingRows.TryGetValue((int)ri, out var existingRow))
@@ -46,12 +53,14 @@ namespace Autossential.Workbook.Activities.Core.Processors
                                var col = new string(c.CellReference?.Value?.TakeWhile(char.IsLetter).ToArray());
                                return targetCols.Contains(col);
                            })
-                           .ToList().ForEach(c => c.Remove());
+                           .ToList()
+                           .ForEach(c => c.Remove());
             }
 
-            // Anchors are located once to maintain SheetData order.
-            // The range cells have been removed, so the next cell (if any) is always a greater reference
-            var anchor = existingRows.Values.Where(r => r.RowIndex.Value > lastRow).OrderBy(r => r.RowIndex.Value).FirstOrDefault();
+            var anchor = existingRows.Values
+                                     .Where(r => r.RowIndex.Value > lastRow)
+                                     .OrderBy(r => r.RowIndex.Value)
+                                     .FirstOrDefault();
 
             Row GetOrCreateRow(int rowIndex)
             {
@@ -68,7 +77,6 @@ namespace Autossential.Workbook.Activities.Core.Processors
                 return newRow;
             }
 
-            // As the range cells have been removed, AppendChild is always safe — the only remaining cells in the row are outside the column range and have greater references, so inserting before them maintains order
             void AppendCell(Row row, Cell cell)
             {
                 var nextCell = row.Elements<Cell>().FirstOrDefault(c =>
@@ -80,35 +88,142 @@ namespace Autossential.Workbook.Activities.Core.Processors
                     row.AppendChild(cell);
             }
 
-            Cell BuildCell(int rowIndex, int colIndex, object value, uint dateStyle, uint timeStyle, uint dateTimeStyle)
+            // Loads SharedStrings only once and builds the index in memory to avoid repeated linear searches while writing the range
+            var sst = GetOrCreateSharedStringTable(wbPart);
+            var sstIndex = BuildSharedStringIndex(sst);
+
+            var (dateStyle, timeStyle, dateTimeStyle) = EnsureStyles(wbPart);
+
+            Cell BuildCell(int rowIndex, int colIndex, object value)
             {
-                var cellRef = CellReference.GetColumnName(colIndex) + rowIndex;
-                var cell = new Cell { CellReference = cellRef };
-                UpdateCell(cell, value, dateStyle, timeStyle, dateTimeStyle);
+                var cellAddress = CellReference.GetColumnName(colIndex) + rowIndex;
+                var cell = new Cell { CellReference = cellAddress };
+                UpdateCell(cell, value, dateStyle, timeStyle, dateTimeStyle, sst, sstIndex);
                 return cell;
             }
 
-            var (dateStyle, timeStyle, dateTimeStyle) = EnsureStyles(wbPart);
             if (addHeaders)
             {
-                var headerRow = GetOrCreateRow(StartRow);
+                var headerRow = GetOrCreateRow(startRow);
                 for (int c = 0; c < data.Columns.Count; c++)
-                    AppendCell(headerRow, BuildCell(StartRow, StartCol + c, data.Columns[c].ColumnName, dateStyle, timeStyle, dateTimeStyle));
+                    AppendCell(headerRow, BuildCell(startRow, startCol + c, data.Columns[c].ColumnName));
+                startRow++;
             }
 
             for (int r = 0; r < data.Rows.Count; r++)
             {
-                int rowIndex = StartRow + 1 + r;
+                int rowIndex = startRow + r;
                 var row = GetOrCreateRow(rowIndex);
                 var dr = data.Rows[r];
                 for (int c = 0; c < data.Columns.Count; c++)
-                    AppendCell(row, BuildCell(rowIndex, StartCol + c, dr[c], dateStyle, timeStyle, dateTimeStyle));
+                    AppendCell(row, BuildCell(rowIndex, startCol + c, dr[c]));
             }
 
+            // Updates the SST count before save it
+            sst.Count = (uint)sstIndex.Count;
+            sst.UniqueCount = (uint)sstIndex.Count;
+            wbPart.SharedStringTablePart.SharedStringTable.Save();
             wsPart.Worksheet.Save();
+
+            RemoveDefaultSheetIfNeed(wbPart, sheetName);
         }
 
-        private static void UpdateCell(Cell cell, object value, uint dateStyle, uint timeStyle, uint dateTimeStyle)
+        public override void WriteCell(string sheetName, string address, object value)
+        {
+            ValidateSheetName(sheetName);
+            using var doc = GetWorkbook();
+            var wbPart = doc.WorkbookPart;
+            var sheet = wbPart.GetOrCreateSheet(sheetName);
+
+            var wsPart = (WorksheetPart)wbPart.GetPartById(sheet.Id.Value);
+
+            var sheetData = wsPart.Worksheet.GetFirstChild<SheetData>();
+            var cellRef = CellReference.OpenXml(address);
+            var rowIndex = cellRef.Row;
+
+            var existingRow = sheetData.Elements<Row>()
+                                       .FirstOrDefault(r => r.RowIndex?.Value == (uint)rowIndex);
+            if (existingRow == null)
+            {
+                existingRow = new Row { RowIndex = (uint)rowIndex };
+                var anchor = sheetData.Elements<Row>()
+                                      .FirstOrDefault(r => r.RowIndex?.Value > (uint)rowIndex);
+                if (anchor != null)
+                    sheetData.InsertBefore(existingRow, anchor);
+                else
+                    sheetData.AppendChild(existingRow);
+            }
+
+            var cell = existingRow.Elements<Cell>()
+                                  .FirstOrDefault(c => c.CellReference?.Value == address);
+            if (cell == null)
+            {
+                cell = new Cell { CellReference = address };
+                var nextCell = existingRow.Elements<Cell>().FirstOrDefault(c =>
+                    string.Compare(c.CellReference?.Value, address,
+                                   StringComparison.OrdinalIgnoreCase) > 0);
+                if (nextCell != null)
+                    existingRow.InsertBefore(cell, nextCell);
+                else
+                    existingRow.AppendChild(cell);
+            }
+
+            cell.RemoveAllChildren();
+            cell.DataType = null;
+            cell.StyleIndex = null;
+
+            var sst = GetOrCreateSharedStringTable(wbPart);
+            var sstIndex = BuildSharedStringIndex(sst);
+            var (dateStyle, timeStyle, dateTimeStyle) = EnsureStyles(wbPart);
+
+            UpdateCell(cell, value, dateStyle, timeStyle, dateTimeStyle, sst, sstIndex);
+
+            sst.Count = (uint)sstIndex.Count;
+            sst.UniqueCount = (uint)sstIndex.Count;
+            wbPart.SharedStringTablePart.SharedStringTable.Save();
+            wsPart.Worksheet.Save();
+
+            RemoveDefaultSheetIfNeed(wbPart, sheetName);
+        }
+
+        private static SharedStringTable GetOrCreateSharedStringTable(WorkbookPart wbPart)
+        {
+            var sstPart = wbPart.SharedStringTablePart
+                          ?? wbPart.AddNewPart<SharedStringTablePart>();
+
+            sstPart.SharedStringTable ??= new SharedStringTable();
+            return sstPart.SharedStringTable;
+        }
+
+        private static Dictionary<string, int> BuildSharedStringIndex(SharedStringTable sst)
+        {
+            var index = new Dictionary<string, int>(StringComparer.Ordinal);
+            int i = 0;
+            foreach (var item in sst.Elements<SharedStringItem>())
+            {
+                var text = item.InnerText;
+                index.TryAdd(text, i);
+                i++;
+            }
+            return index;
+        }
+
+        private static int GetOrAddSharedString(SharedStringTable sst,
+                                                Dictionary<string, int> sstIndex,
+                                                string value)
+        {
+            if (sstIndex.TryGetValue(value, out var idx))
+                return idx;
+
+            sst.AppendChild(new SharedStringItem(new Text(value)));
+            idx = sstIndex.Count;
+            sstIndex[value] = idx;
+            return idx;
+        }
+
+        private static void UpdateCell(Cell cell, object value,
+                                       uint dateStyle, uint timeStyle, uint dateTimeStyle,
+                                       SharedStringTable sst, Dictionary<string, int> sstIndex)
         {
             switch (value)
             {
@@ -117,8 +232,8 @@ namespace Autossential.Workbook.Activities.Core.Processors
                     break;
 
                 case string s:
-                    cell.DataType = CellValues.InlineString;
-                    cell.InlineString = new InlineString(new Text(s));
+                    cell.DataType = CellValues.SharedString;
+                    cell.CellValue = new CellValue(GetOrAddSharedString(sst, sstIndex, s).ToString());
                     break;
 
                 case bool b:
@@ -129,19 +244,19 @@ namespace Autossential.Workbook.Activities.Core.Processors
                 case DateTime dt:
                     cell.CellValue = new CellValue(dt.ToOADate().ToString(CultureInfo.InvariantCulture));
                     cell.StyleIndex = dt.TimeOfDay == TimeSpan.Zero
-                                        ? dateStyle
-                                        : dt.Date == DateTime.MinValue.Date
-                                            ? timeStyle
-                                            : dateTimeStyle;
+                                    ? dateStyle
+                                    : dt.Date == DateTime.MinValue.Date
+                                    ? timeStyle
+                                    : dateTimeStyle;
                     break;
 
                 case DateTimeOffset dto:
                     cell.CellValue = new CellValue(dto.DateTime.ToOADate().ToString(CultureInfo.InvariantCulture));
                     cell.StyleIndex = dto.TimeOfDay == TimeSpan.Zero
-                                        ? dateStyle
-                                        : dto.Date == DateTime.MinValue.Date
-                                            ? timeStyle
-                                            : dateTimeStyle;
+                                    ? dateStyle
+                                    : dto.Date == DateTimeOffset.MinValue.Date
+                                    ? timeStyle
+                                    : dateTimeStyle;
                     break;
 
                 case TimeSpan ts:
@@ -150,8 +265,8 @@ namespace Autossential.Workbook.Activities.Core.Processors
                     break;
 
                 case Guid g:
-                    cell.DataType = CellValues.InlineString;
-                    cell.InlineString = new InlineString(new Text(g.ToString()));
+                    cell.DataType = CellValues.SharedString;
+                    cell.CellValue = new CellValue(GetOrAddSharedString(sst, sstIndex, g.ToString()).ToString());
                     break;
 
                 case double d:
@@ -177,8 +292,8 @@ namespace Autossential.Workbook.Activities.Core.Processors
                     break;
 
                 default:
-                    cell.DataType = CellValues.InlineString;
-                    cell.InlineString = new InlineString(new Text(value.ToString() ?? string.Empty));
+                    cell.DataType = CellValues.SharedString;
+                    cell.CellValue = new CellValue(GetOrAddSharedString(sst, sstIndex, value.ToString() ?? string.Empty).ToString());
                     break;
             }
         }
@@ -227,9 +342,6 @@ namespace Autossential.Workbook.Activities.Core.Processors
                 return stylesheet.CellFormats.Count - 1;
             }
 
-            // Built-in number format IDs:
-            // https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.spreadsheet.numberingformat?view=openxml-2.8.1
-
             uint dateStyle = EnsureCellFormat(14);
             uint timeStyle = EnsureCellFormat(21);
             uint dateTimeStyle = EnsureCellFormat(22);
@@ -238,56 +350,6 @@ namespace Autossential.Workbook.Activities.Core.Processors
             stylesPart.Stylesheet.Save();
 
             return (dateStyle, timeStyle, dateTimeStyle);
-        }
-
-        public override void WriteCell(string sheetName, string address, object value)
-        {
-            WorkbookStream.Position = 0;
-            using var doc = SpreadsheetDocument.Open(WorkbookStream, true);
-            var wbPart = doc.WorkbookPart;
-            var sheet = wbPart.GetOrCreateSheet(sheetName);
-            var wsPart = (WorksheetPart)wbPart.GetPartById(sheet.Id.Value);
-
-            var sheetData = wsPart.Worksheet.GetFirstChild<SheetData>();
-            var cellRef = CellReference.OpenXml(address);
-
-            var (dateStyle, timeStyle, dateTimeStyle) = EnsureStyles(wbPart);
-            var colLetter = CellReference.GetColumnName(cellRef.Col);
-            var rowIndex = cellRef.Row;
-
-            var existingRow = sheetData.Elements<Row>().FirstOrDefault(r => r.RowIndex?.Value == (uint)rowIndex);
-            if (existingRow == null)
-            {
-                existingRow = new Row { RowIndex = (uint)rowIndex };
-                var anchor = sheetData.Elements<Row>()
-                                       .FirstOrDefault(r => r.RowIndex?.Value > (uint)rowIndex);
-                if (anchor != null)
-                    sheetData.InsertBefore(existingRow, anchor);
-                else
-                    sheetData.AppendChild(existingRow);
-            }
-
-            var cell = existingRow.Elements<Cell>()
-                  .FirstOrDefault(c => c.CellReference?.Value == address);
-
-            if (cell == null)
-            {
-                cell = new Cell { CellReference = address };
-                var nextCell = existingRow.Elements<Cell>().FirstOrDefault(c =>
-                    string.Compare(c.CellReference?.Value, address,
-                                   StringComparison.OrdinalIgnoreCase) > 0);
-                if (nextCell != null)
-                    existingRow.InsertBefore(cell, nextCell);
-                else
-                    existingRow.AppendChild(cell);
-            }
-
-            cell.RemoveAllChildren();
-            cell.DataType = null;
-            cell.StyleIndex = null;
-
-            UpdateCell(cell, value, dateStyle, timeStyle, dateTimeStyle);
-            wsPart.Worksheet.Save();
         }
 
         protected override void CreateNew()
@@ -300,15 +362,42 @@ namespace Autossential.Workbook.Activities.Core.Processors
             var wsPart = wbPart.AddNewPart<WorksheetPart>();
             wsPart.Worksheet = new Worksheet(new SheetData());
 
+            var sstPart = wbPart.AddNewPart<SharedStringTablePart>();
+            sstPart.SharedStringTable = new SharedStringTable
+            {
+                Count = 0,
+                UniqueCount = 0
+            };
+
             var sheets = wbPart.Workbook.AppendChild(new Sheets());
             sheets.AppendChild(new Sheet
             {
                 Id = wbPart.GetIdOfPart(wsPart),
                 SheetId = 1,
-                Name = "Sheet1"
+                Name = SetDefaultSheetName()
             });
 
             doc.Save();
+        }
+
+        private void RemoveDefaultSheetIfNeed(WorkbookPart wbPart, string sheetName)
+        {
+            var defaultSheetName = ConsumeDefaultSheetName();
+            if (defaultSheetName == null || defaultSheetName.Equals(sheetName, StringComparison.OrdinalIgnoreCase))
+                return;
+
+            var sheet = wbPart.Workbook.Sheets
+                              .Elements<Sheet>()
+                              .FirstOrDefault(s => s.Name?.Value == defaultSheetName); // case-insensitive is being handled above
+
+            if (sheet == null)
+                return;
+
+            var wsPart = (WorksheetPart)wbPart.GetPartById(sheet.Id.Value);
+            wbPart.DeletePart(wsPart);
+            sheet.Remove();
+
+            wbPart.Workbook.Save();
         }
     }
 }

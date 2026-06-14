@@ -1,4 +1,6 @@
-﻿using NPOI.HSSF.UserModel;
+﻿using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Spreadsheet;
+using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
 using System.Data;
 
@@ -29,6 +31,7 @@ namespace Autossential.Workbook.Activities.Core.Processors
 
         public override void WriteCell(string sheetName, string address, object value)
         {
+            ValidateSheetName(sheetName);
             using var wb = GetWorkbook();
             var sh = wb.GetSheet(sheetName) ?? wb.CreateSheet(sheetName);
 
@@ -45,11 +48,14 @@ namespace Autossential.Workbook.Activities.Core.Processors
             var cell = row.GetCell(colIdx) ?? row.CreateCell(colIdx);
 
             SetCell(cell, value, dateStyle, timeStyle, dateTimeStyle);
+
+            RemoveDefaultSheetIfNeed(wb, sheetName);
             FlushWorkbook(wb);
         }
 
         public override void WriteRange(string sheetName, DataTable data, string startingCell, bool addHeaders)
         {
+            ValidateSheetName(sheetName);
             using var wb = GetWorkbook();
             var sheet = wb.GetSheet(sheetName) ?? wb.CreateSheet(sheetName);
 
@@ -69,15 +75,19 @@ namespace Autossential.Workbook.Activities.Core.Processors
                 var headerRow = GetOrCreateRow(startRow);
                 for (int c = 0; c < data.Columns.Count; c++)
                     SetCell(headerRow.CreateCell(startCol + c), data.Columns[c].ColumnName, dateStyle, timeStyle, dateTimeStyle);
+
+                startRow++;
             }
 
             for (int r = 0; r < data.Rows.Count; r++)
             {
-                var row = GetOrCreateRow(startRow + 1 + r);
+                var row = GetOrCreateRow(startRow + r);
                 var dr = data.Rows[r];
                 for (int c = 0; c < data.Columns.Count; c++)
                     SetCell(row.CreateCell(startCol + c), dr[c], dateStyle, timeStyle, dateTimeStyle);
             }
+
+            RemoveDefaultSheetIfNeed(wb, sheetName);
             FlushWorkbook(wb);
         }
 
@@ -172,8 +182,21 @@ namespace Autossential.Workbook.Activities.Core.Processors
         protected override void CreateNew()
         {
             using var wb = new HSSFWorkbook();
-            wb.CreateSheet("Sheet1");
+            wb.CreateSheet(SetDefaultSheetName());
             wb.Write(WorkbookStream, leaveOpen: true);
+        }
+
+        private void RemoveDefaultSheetIfNeed(IWorkbook wb, string sheetName)
+        {
+            var defaultSheetName = ConsumeDefaultSheetName();
+            if (defaultSheetName == null || defaultSheetName.Equals(sheetName, StringComparison.OrdinalIgnoreCase))
+                return;
+
+            var index = wb.GetSheetIndex(defaultSheetName);
+            if (index < 0)
+                return;
+
+            wb.RemoveSheetAt(index);
         }
     }
 }

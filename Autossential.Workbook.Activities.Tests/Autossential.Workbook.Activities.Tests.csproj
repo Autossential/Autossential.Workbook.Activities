@@ -8,17 +8,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Remove="Activities\GetRangeSizeTests.cs" />
-	  <Compile Remove="Activities\ReadCellTests.cs" />
-	  <Compile Remove="Activities\ReadColumnTests.cs" />
-	  <Compile Remove="Activities\ReadRangeTests.cs" />
-	  <Compile Remove="Activities\ReadRowTests.cs" />
-	  <Compile Remove="Activities\WorkbookScopeTests.cs" />
 	  <Compile Remove="WorkbookFixture.cs" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<Folder Include="Activities\" />
 	</ItemGroup>
 
 	<ItemGroup>

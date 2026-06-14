@@ -1,28 +1,41 @@
 ﻿namespace Autossential.Workbook.Activities.Tests.Activities
 {
-    //public class ReadColumnTests(WorkbookFixture fixture) : IClassFixture<WorkbookFixture>
-    //{
-    //    public WorkbookFixture Fixture { get; } = fixture;
+    public class ReadColumnTests : BaseTests
+    {
+        [Test]
+        [Arguments(".xls", "A1", 0, 10)]
+        [Arguments(".xlsx", "B1", 0, 0)]
+        [Arguments(".xls", "F4", 0, 6)]
+        [Arguments(".xlsx", "I3", 5, 5)]
 
-    //    [Theory]
-    //    [InlineData(true, "Sheet1", "A1", 0, 10)]
-    //    [InlineData(true, "Sheet1", "A1", 5, 5)]
-    //    [InlineData(false, "Sheet2", "B2", 0, 1)]
-    //    [InlineData(true, "Sheet2", "E2", 0, 4)]
-    //    [InlineData(false, "Sheet2", "J2", 0, 9)]
-    //    [InlineData(true, "Sheet3", "E1", 0, 0)]
-    //    public void ReadColumn_ReturnValues(bool openXmlFormat, string sheetName, string startingCell, int limit, int expectedCount)
-    //    {
-    //        var path = openXmlFormat ? Fixture.OpenXMLFilePath : Fixture.BinaryFilePath;
+        public async Task ReadColumn_ReturnsExpectedValue_BasedOnStaringCellAndLimit(string extension, string startingCell, int limit, int expectedCount)
+        {
+            var data = TableUtils.Build(10, 10, (col, row) =>
+            {
+                var value = $"C{col}R{row}";
+                return col switch
+                {
+                    2 or 7 => null,
+                    3 => row % 2 == 0 || row % 7 == 0 ? value : "",
+                    8 => row < 6 ? value : null,
+                    4 or 5 or 6 => (row + col) % 3 == 0 ? value : DBNull.Value,
+                    10 => row > 4 && row < 10 ? value : "",
+                    _ => value
+                };
+            });
 
-    //        var result = WorkbookFixture.InvokeWorkbookScopeWith(path, new ReadColumn
-    //        {
-    //            SheetName = sheetName,
-    //            StartingCell = startingCell,
-    //            Limit = limit
-    //        });
+            var (processor, filePath) = NewFile(extension);
+            processor.WriteRange("Sheet1", data, "A1", false);
+            processor.Save();
 
-    //        Assert.Equal(expectedCount, result.Length);
-    //    }
-    //}
+            var values = InvokeWorkbookScopeWith(filePath, new ReadColumn
+            {
+                SheetName = "Sheet1",
+                StartingCell = startingCell,
+                Limit = limit
+            });
+
+            await Assert.That(values.Length).IsEqualTo(expectedCount);
+        }
+    }
 }

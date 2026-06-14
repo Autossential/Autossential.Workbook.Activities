@@ -1,74 +1,59 @@
-﻿namespace Autossential.Workbook.Activities.Tests
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Data;
+﻿using System.Data;
 
+namespace Autossential.Workbook.Activities.Tests
+{
     public static class TableUtils
     {
-        private static readonly string[] SampleNames = { "Ana", "Bruno", "Carlos", "Daniela", "Eduardo", "Fernanda", "Gabriel", "Helena" };
-        private static readonly string[] SampleDomains = { "gmail.com", "hotmail.com", "outlook.com", "empresa.com" };
-        private static readonly string[] SampleCompanies = { "TechCorp", "Inova Ltda", "Global Solutions", "AlphaSoft", "Beta Systems", "Delta Consulting" };
-        private static readonly string[] SampleStreets = { "Rua das Flores", "Avenida Brasil", "Rua XV de Novembro", "Rua das Palmeiras", "Avenida Paulista" };
-
-        private static readonly List<Func<Random, object>> Generators =
-        [
-            rand => SampleNames[rand.Next(SampleNames.Length)], // Nome
-            rand => $"{SampleNames[rand.Next(SampleNames.Length)].ToLower()}{rand.Next(100)}@{SampleDomains[rand.Next(SampleDomains.Length)]}", // Email
-            rand => DateTime.Today.AddDays(rand.Next(-1000, 1000)).ToString("yyyy-MM-dd"), // Data
-            rand => new TimeSpan(rand.Next(0, 24), rand.Next(0, 60), 0).ToString(@"hh\:mm"), // Hora
-            rand => DateTime.Now.AddMinutes(rand.Next(-10000, 10000)).ToString("yyyy-MM-dd HH:mm"), // Data e Hora
-            rand => rand.Next(2) == 0 ? "true" : "false", // Booleano
-            rand => rand.Next(-1000, 1000), // Inteiro
-            rand => (rand.NextDouble() * 1000).ToString("F2"), // Double
-            rand => DBNull.Value, // Null/vazio
-            rand => SampleCompanies[rand.Next(SampleCompanies.Length)], // Companhia
-            rand => $"{SampleStreets[rand.Next(SampleStreets.Length)]}, {rand.Next(1, 999)}", // Endereço
+        private static readonly Func<Random, int, int, object?>[] Generators = [
+            (rand, col, row) => $"C{col}R{row}",
+            (rand, col, row) => DateTime.Today.AddDays(rand.Next(-1000, 1000)).ToString("yyyy-MM-dd"),
+            (rand, col, row) => new TimeSpan(rand.Next(0, 24), rand.Next(0, 60), 0).ToString(@"hh\:mm"),
+            (rand, col, row) => DateTime.Today.AddMinutes(rand.Next(-10000, 10000)).ToString("yyyy-MM-dd HH:mm"),
+            (rand, col, row) => null,
+            (rand, col, row) => rand.Next(2) == 0 ,
+            (rand, col, row) => rand.Next(-1000, 1000),
+            (rand, col, row) => (rand.NextDouble() * 1000),
+            (rand, col, row) => DBNull.Value,
+            (rand, col, row) => string.Empty
         ];
 
-        public static DataTable Generate(int cols, int rows, string seed)
+        public static DataTable Build(int cols, int rows, Func<int, int, object?>? valueResolver = null)
         {
+            valueResolver ??= (col, row) => $"C{col}R{row}";
+
             var table = new DataTable();
-            int hashSeed = seed.GetHashCode() ^ cols ^ rows;
-            Random rand = new(hashSeed);
+            if (cols == 0 && rows == 0)
+                return table;
 
-            // Criar colunas genéricas
             for (int c = 0; c < cols; c++)
-            {
                 table.Columns.Add($"Col{c + 1}", typeof(object));
-            }
 
-            // Popular linhas
             for (int r = 0; r < rows; r++)
             {
                 var row = table.NewRow();
                 for (int c = 0; c < cols; c++)
-                {
-                    var generator = Generators[rand.Next(Generators.Count)];
-                    row[c] = generator(rand);
-                }
+                    row[c] = valueResolver(c + 1, r + 1);
+
                 table.Rows.Add(row);
             }
-
             return table;
         }
 
-        public static DataTable Build(int cols, int rows, Func<int, int, object?> value)
+        public static DataTable Generate(int cols, int rows, int seed = 0)
         {
+            int hashSeed = cols ^ rows ^ seed;
+            var rnd = new Random(hashSeed);
             var table = new DataTable();
-
-            // Criar colunas genéricas
             for (int c = 0; c < cols; c++)
-            {
                 table.Columns.Add($"Col{c + 1}", typeof(object));
-            }
 
             for (int r = 0; r < rows; r++)
             {
                 var row = table.NewRow();
                 for (int c = 0; c < cols; c++)
                 {
-                    row[c] = value(c + 1, r + 1);
+                    var generator = Generators[rnd.Next(Generators.Length)];
+                    row[c] = generator(rnd, c + 1, r + 1);
                 }
                 table.Rows.Add(row);
             }

@@ -1,35 +1,43 @@
 ﻿namespace Autossential.Workbook.Activities.Tests.Activities
 {
-    //public class ReadRangeTests : IClassFixture<WorkbookFixture>
-    //{
-    //    public ReadRangeTests(WorkbookFixture fixture)
-    //    {
-    //        Fixture = fixture;
-    //    }
+    public class ReadRangeTests : BaseTests
+    {
+        [Test]
+        [Arguments(".xlsx", "A1", true, 1, 1, 10, 10)]
+        [Arguments(".xlsx", "A1", true, 3, 2, 10, 4)]
+        [Arguments(".xls", "D2:G8", false, 1, 1, 4, 7)]
 
-    //    public WorkbookFixture Fixture { get; }
+        public async Task ReadRange_ReturnsExpectedTable_BasedOnArguments(string extension, string range, bool hasHeaders, int headerRows, int rowsPerRecord, int expectedCols, int expectedRows)
+        {
+            var data = TableUtils.Build(10, 10, (col, row) =>
+            {
+                var value = $"C{col}R{row}";
+                return col switch
+                {
+                    2 or 7 => null,
+                    3 => row % 2 == 0 || row % 7 == 0 ? value : "",
+                    8 => row < 6 ? value : null,
+                    4 or 5 or 6 => (row + col) % 3 == 0 ? value : DBNull.Value,
+                    10 => row > 4 && row < 10 ? value : "",
+                    _ => value
+                };
+            });
 
-    //    [Theory]
-    //    [InlineData(true, "Sheet1", false, "A1", 10, 10, 1, 1)]
-    //    [InlineData(false, "Sheet1", false, "A1:E5", 5, 5, 1, 1)]
-    //    [InlineData(true, "Sheet1", true, "A1", 9, 10, 1, 1)]
-    //    [InlineData(false, "Sheet4", true, "A3", 9, 5, 2, 3)]
-    //    [InlineData(false, "Sheet4", true, "A1", 10, 5, 2, 3)]
+            var (processor, filePath) = NewFile(extension);
+            processor.WriteRange("Sheet1", data, "A1", hasHeaders);
+            processor.Save();
 
-    //    public void ReadRange_ReturnsTable(bool openXmlFormat, string sheetName, bool hasHeaders, string range, int rows, int cols, int headerRows, int rowsPerRecord)
-    //    {
-    //        var path = openXmlFormat ? Fixture.OpenXMLFilePath : Fixture.BinaryFilePath;
-    //        var result = WorkbookFixture.InvokeWorkbookScopeWith(path, new ReadRange
-    //        {
-    //            SheetName = sheetName,
-    //            HasHeaders = hasHeaders,
-    //            Range = range,
-    //            RowsPerRecord = rowsPerRecord,
-    //            HeaderRows = headerRows
-    //        });
+            var readData = InvokeWorkbookScopeWith(filePath, new ReadRange
+            {
+                SheetName = "Sheet1",
+                HasHeaders = hasHeaders,
+                Range = range,
+                RowsPerRecord = rowsPerRecord,
+                HeaderRows = headerRows
+            });
 
-    //        Assert.Equal(rows, result.Rows.Count);
-    //        Assert.Equal(cols, result.Columns.Count);
-    //    }
-    //}
+            await Assert.That(readData.Rows.Count).IsEqualTo(expectedRows);
+            await Assert.That(readData.Columns.Count).IsEqualTo(expectedCols);
+        }
+    }
 }

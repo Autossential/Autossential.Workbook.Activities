@@ -39,7 +39,6 @@
 
 	<ItemGroup>
 		<PackageReference Include="ExcelDataReader" />
-		<PackageReference Include="ExcelDataReader.DataSet" />
 		<PackageReference Include="DocumentFormat.OpenXml" />
 		<PackageReference Include="NPOI" />
 		<PackageReference Include="System.Activities.ViewModels" PrivateAssets="All" />
