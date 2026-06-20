@@ -12,7 +12,7 @@ namespace Autossential.Workbook.Activities.Tests
             (rand, col, row) => null,
             (rand, col, row) => rand.Next(2) == 0 ,
             (rand, col, row) => rand.Next(-1000, 1000),
-            (rand, col, row) => (rand.NextDouble() * 1000),
+            (rand, col, row) => Math.Round(rand.NextDouble() * 1000, 2),
             (rand, col, row) => DBNull.Value,
             (rand, col, row) => string.Empty
         ];

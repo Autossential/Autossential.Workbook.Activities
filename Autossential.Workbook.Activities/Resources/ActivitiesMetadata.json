@@ -2,6 +2,83 @@
   "activities": [
     {
       "categoryKey": "ActivityCategories_Workbook",
+      "descriptionKey": "FindValue_Description",
+      "displayNameKey": "FindValue_DisplayName",
+      "fullName": "Autossential.Workbook.Activities.FindValue",
+      "iconKey": "FindValue.svg",
+      "properties": [
+        {
+          "category": {
+            "displayNameKey": "Categories_Input",
+            "name": "Input"
+          },
+          "displayNameKey": "FindValue_SheetName_DisplayName",
+          "isRequired": true,
+          "isVisible": true,
+          "name": "SheetName",
+          "tooltipKey": "FindValue_SheetName_Description"
+        },
+        {
+          "category": {
+            "displayNameKey": "Categories_Input",
+            "name": "Input"
+          },
+          "displayNameKey": "FindValue_Range_DisplayName",
+          "isRequired": false,
+          "isVisible": true,
+          "name": "Range",
+          "tooltipKey": "FindValue_Range_Description"
+        },
+        {
+          "category": {
+            "displayNameKey": "Categories_Input",
+            "name": "Input"
+          },
+          "displayNameKey": "FindValue_Value_DisplayName",
+          "isRequired": true,
+          "isVisible": true,
+          "name": "Value",
+          "tooltipKey": "FindValue_Value_Description"
+        },
+        {
+          "category": {
+            "displayNameKey": "Categories_Output",
+            "name": "Output"
+          },
+          "displayNameKey": "FindValue_CellAddress_DisplayName",
+          "isRequired": false,
+          "isVisible": true,
+          "name": "CellAddress",
+          "tooltipKey": "FindValue_CellAddress_Description"
+        },
+        {
+          "category": {
+            "displayNameKey": "Categories_Output",
+            "name": "Output"
+          },
+          "displayNameKey": "FindValue_RowNumber_DisplayName",
+          "isRequired": false,
+          "isVisible": true,
+          "name": "RowNumber",
+          "tooltipKey": "FindValue_RowNumber_Description"
+        },
+        {
+          "category": {
+            "displayNameKey": "Categories_Output",
+            "name": "Output"
+          },
+          "displayNameKey": "FindValue_ColumnNumber_DisplayName",
+          "isRequired": false,
+          "isVisible": true,
+          "name": "ColumnNumber",
+          "tooltipKey": "FindValue_ColumnNumber_Description"
+        }
+      ],
+      "shortName": "FindValue",
+      "viewModelType": "Autossential.Workbook.Activities.ViewModels.FindValueViewModel"
+    },
+    {
+      "categoryKey": "ActivityCategories_Workbook",
       "descriptionKey": "GetRangeSize_Description",
       "displayNameKey": "GetRangeSize_DisplayName",
       "fullName": "Autossential.Workbook.Activities.GetRangeSize",

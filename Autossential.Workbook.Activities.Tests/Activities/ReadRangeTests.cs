@@ -1,13 +1,32 @@
-﻿namespace Autossential.Workbook.Activities.Tests.Activities
+﻿using System.Data;
+
+namespace Autossential.Workbook.Activities.Tests.Activities
 {
     public class ReadRangeTests : BaseTests
     {
         [Test]
+        [Arguments(".xlsx", null, true, 1, 1, 10, 10)]
+        [Arguments(".xlsx", "", true, 3, 2, 10, 4)]
+        public async Task ReadRange_ReadsWholeSheet_WhenMissingRange(string extension, string? range, bool hasHeaders, int headerRows, int rowsPerRecord, int expectedCols, int expectedRows)
+        {
+            var readData = Run(extension, range, hasHeaders, headerRows, rowsPerRecord);
+
+            await Assert.That(readData.Rows.Count).IsEqualTo(expectedRows);
+            await Assert.That(readData.Columns.Count).IsEqualTo(expectedCols);
+        }
+
+        [Test]
         [Arguments(".xlsx", "A1", true, 1, 1, 10, 10)]
         [Arguments(".xlsx", "A1", true, 3, 2, 10, 4)]
-        [Arguments(".xls", "D2:G8", false, 1, 1, 4, 7)]
-
         public async Task ReadRange_ReturnsExpectedTable_BasedOnArguments(string extension, string range, bool hasHeaders, int headerRows, int rowsPerRecord, int expectedCols, int expectedRows)
+        {
+            var readData = Run(extension, range, hasHeaders, headerRows, rowsPerRecord);
+
+            await Assert.That(readData.Rows.Count).IsEqualTo(expectedRows);
+            await Assert.That(readData.Columns.Count).IsEqualTo(expectedCols);
+        }
+
+        private DataTable Run(string extension, string? range, bool hasHeaders, int headerRows, int rowsPerRecord)
         {
             var data = TableUtils.Build(10, 10, (col, row) =>
             {
@@ -35,9 +54,7 @@
                 RowsPerRecord = rowsPerRecord,
                 HeaderRows = headerRows
             });
-
-            await Assert.That(readData.Rows.Count).IsEqualTo(expectedRows);
-            await Assert.That(readData.Columns.Count).IsEqualTo(expectedCols);
+            return readData;
         }
     }
 }

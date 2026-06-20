@@ -26,7 +26,8 @@ namespace Autossential.Workbook.Activities.ViewModels
                     typeof(WriteRange),
                     typeof(SaveWorkbook),
                     typeof(WriteCell),
-                    typeof(WriteRange)
+                    typeof(WriteRange),
+                    typeof(FindValue)
                  ]);
         }
 
@@ -48,7 +49,7 @@ namespace Autossential.Workbook.Activities.ViewModels
 #if WINDOWS
             if (IsWidgetSupported(ViewModelWidgetType.ActionButton))
             {
-                WorkbookPath.AddFileDialogMenuAction(true, "Workbook Files|*.xlsx;*.xlsm;*.xls|All Files|*.*");
+                WorkbookPath.AddFileDialogMenuAction(false, "Workbook Files|*.xlsx;*.xlsm;*.xls|All Files|*.*");
             }
 #endif
         }

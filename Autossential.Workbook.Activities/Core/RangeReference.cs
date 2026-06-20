@@ -82,9 +82,6 @@ namespace Autossential.Workbook.Activities.Core
         /// <returns>True if the ranges are equivalent, false otherwise.</returns>
         public bool IsEquivalentTo(RangeReference other) => Start == other.Start && End == other.End;
 
-        public bool IsRowInRange(int row) => row >= Start.Row && row <= End.Row;
-        public bool IsColInRange(int col) => col >= Start.Col && col <= End.Col;
-
         public override readonly string ToString() => IsValid ? $"{Start}:{End}" : string.Empty;
     }
 }

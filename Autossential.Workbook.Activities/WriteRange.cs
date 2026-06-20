@@ -16,9 +16,11 @@ namespace Autossential.Workbook.Activities
         protected override void Execute(CodeActivityContext context)
         {
             var sheetName = SheetName.Get(context);
-            var startingCell = StartingCell.Get(context);
-            var data = DataTable.Get(context);
+            var startingCell = StartingCell.Get(context) ?? "A1";
+            if (startingCell.Length == 0)
+                startingCell = "A1";
 
+            var data = DataTable.Get(context);
             context.GetWorkbookProcessor().WriteRange(sheetName, data, startingCell, AddHeaders);
         }
     }

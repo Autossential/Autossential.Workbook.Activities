@@ -493,4 +493,60 @@
     <value>Der Inhalt, der in die angegebene Zelle geschrieben werden soll. Vorhandene Werte in der Zelle werden ersetzt.</value>
     <comment>property description</comment>
   </data>
+	<data name="FindValue_DisplayName" xml:space="preserve">
+    <value>Wert suchen</value>
+    <comment>activity name</comment>
+</data>
+	<data name="FindValue_Description" xml:space="preserve">
+    <value>Sucht nach einem angegebenen Wert innerhalb eines Excel-Arbeitsblattbereichs und gibt die Zellenadresse, Zeilennummer und Spaltennummer des ersten Vorkommens zurück. Verwenden Sie diese Aktivität, wenn Sie bestimmte Daten in einer Arbeitsmappe lokalisieren und deren Koordinaten für die weitere Verarbeitung abrufen müssen.</value>
+    <comment>activity description</comment>
+</data>
+	<data name="FindValue_SheetName_DisplayName" xml:space="preserve">
+    <value>Blattname</value>
+    <comment>property name</comment>
+</data>
+	<data name="FindValue_SheetName_Description" xml:space="preserve">
+    <value>Name des Arbeitsblatts, in dem nach dem Wert gesucht werden soll. Diese Eigenschaft ist erforderlich, und das Blatt muss in der Arbeitsmappe vorhanden sein.</value>
+    <comment>property description</comment>
+</data>
+	<data name="FindValue_Range_DisplayName" xml:space="preserve">
+    <value>Bereich</value>
+    <comment>property name</comment>
+</data>
+	<data name="FindValue_Range_Description" xml:space="preserve">
+    <value>Zellbereich, in dem gesucht werden soll (z. B. "A1:C10"). Wenn nicht angegeben, wird standardmäßig "A1" verwendet, wodurch das gesamte Arbeitsblatt durchsucht wird.</value>
+    <comment>property description</comment>
+</data>
+	<data name="FindValue_Value_DisplayName" xml:space="preserve">
+    <value>Wert</value>
+    <comment>property name</comment>
+</data>
+	<data name="FindValue_Value_Description" xml:space="preserve">
+    <value>Der spezifische Text- oder Zahlenwert, der innerhalb des Arbeitsblattbereichs gesucht werden soll. Diese Eigenschaft ist erforderlich und führt eine exakte Übereinstimmungssuche durch.</value>
+    <comment>property description</comment>
+</data>
+	<data name="FindValue_CellAddress_DisplayName" xml:space="preserve">
+    <value>Zellenadresse</value>
+    <comment>property name</comment>
+</data>
+	<data name="FindValue_CellAddress_Description" xml:space="preserve">
+    <value>Gibt die Adresse der Zelle zurück, die den Wert enthält (z. B. "B4").</value>
+    <comment>property description</comment>
+</data>
+	<data name="FindValue_RowNumber_DisplayName" xml:space="preserve">
+    <value>Zeilennummer</value>
+    <comment>property name</comment>
+</data>
+	<data name="FindValue_RowNumber_Description" xml:space="preserve">
+    <value>Gibt die 1-basierte Zeilennummer der Zelle zurück, die den Wert enthält (z. B. 4 für Zelle B4).</value>
+    <comment>property description</comment>
+</data>
+	<data name="FindValue_ColumnNumber_DisplayName" xml:space="preserve">
+    <value>Spaltennummer</value>
+    <comment>property name</comment>
+</data>
+	<data name="FindValue_ColumnNumber_Description" xml:space="preserve">
+    <value>Gibt die 1-basierte Spaltennummer der Zelle zurück, die den Wert enthält (z. B. 2 für Zelle B4).</value>
+    <comment>property description</comment>
+</data>
 </root>

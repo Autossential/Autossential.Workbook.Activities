@@ -1,6 +1,4 @@
-﻿using System.Activities;
-
-namespace Autossential.Workbook.Activities.Tests.Activities
+﻿namespace Autossential.Workbook.Activities.Tests.Activities
 {
     public class WorkbookScopeTests : BaseTests
     {
@@ -13,13 +11,13 @@ namespace Autossential.Workbook.Activities.Tests.Activities
             processor.WriteCell("Sheet1", "A1", 123d);
             processor.Save();
 
-            var result = InvokeWorkbookScopeWith(filePath, new ReadCell
+            var result = InvokeWorkbookScopeWith<object>(filePath, new ReadCell
             {
                 SheetName = "Sheet1",
                 CellAddress = "A1",
             });
 
             await Assert.That(result).IsEqualTo(123d);
-        }        
+        }
     }
 }

@@ -493,4 +493,60 @@
     <value>O conteúdo a ser gravado na célula especificada. Qualquer valor existente na célula será substituído.</value>
     <comment>property description</comment>
   </data>
+<data name="FindValue_DisplayName" xml:space="preserve">
+    <value>Localizar valor</value>
+    <comment>activity name</comment>
+</data>
+<data name="FindValue_Description" xml:space="preserve">
+    <value>Procura um valor especificado dentro de um intervalo de uma planilha do Excel e retorna o endereço da célula, o número da linha e o número da coluna da primeira ocorrência. Use esta atividade quando precisar localizar dados específicos dentro de uma pasta de trabalho e recuperar suas coordenadas para processamento posterior.</value>
+    <comment>activity description</comment>
+</data>
+<data name="FindValue_SheetName_DisplayName" xml:space="preserve">
+    <value>Nome da planilha</value>
+    <comment>property name</comment>
+</data>
+<data name="FindValue_SheetName_Description" xml:space="preserve">
+    <value>Nome da planilha onde o valor será procurado. Esta propriedade é obrigatória e a planilha deve existir na pasta de trabalho.</value>
+    <comment>property description</comment>
+</data>
+<data name="FindValue_Range_DisplayName" xml:space="preserve">
+    <value>Intervalo</value>
+    <comment>property name</comment>
+</data>
+<data name="FindValue_Range_Description" xml:space="preserve">
+    <value>Intervalo de células onde procurar (por exemplo, "A1:C10"). Se não for fornecido, o padrão é "A1", o que procura em toda a planilha.</value>
+    <comment>property description</comment>
+</data>
+<data name="FindValue_Value_DisplayName" xml:space="preserve">
+    <value>Valor</value>
+    <comment>property name</comment>
+</data>
+<data name="FindValue_Value_Description" xml:space="preserve">
+    <value>O valor de texto ou numérico específico a ser procurado dentro do intervalo da planilha. Esta propriedade é obrigatória e realiza uma pesquisa de correspondência exata.</value>
+    <comment>property description</comment>
+</data>
+<data name="FindValue_CellAddress_DisplayName" xml:space="preserve">
+    <value>Endereço da célula</value>
+    <comment>property name</comment>
+</data>
+<data name="FindValue_CellAddress_Description" xml:space="preserve">
+    <value>Retorna o endereço da célula que contém o valor (por exemplo, "B4").</value>
+    <comment>property description</comment>
+</data>
+<data name="FindValue_RowNumber_DisplayName" xml:space="preserve">
+    <value>Número da linha</value>
+    <comment>property name</comment>
+</data>
+<data name="FindValue_RowNumber_Description" xml:space="preserve">
+    <value>Retorna o número da linha (base 1) da célula que contém o valor (por exemplo, 4 para a célula B4).</value>
+    <comment>property description</comment>
+</data>
+<data name="FindValue_ColumnNumber_DisplayName" xml:space="preserve">
+    <value>Número da coluna</value>
+    <comment>property name</comment>
+</data>
+<data name="FindValue_ColumnNumber_Description" xml:space="preserve">
+    <value>Retorna o número da coluna (base 1) da célula que contém o valor (por exemplo, 2 para a célula B4).</value>
+    <comment>property description</comment>
+</data>
 </root>

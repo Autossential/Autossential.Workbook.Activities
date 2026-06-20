@@ -353,5 +353,24 @@ namespace Autossential.Workbook.Activities.Tests.Unit
             var values = processor.ReadRow("Sheet1", startingCell, limit);
             await Assert.That(values.Length).IsEqualTo(expectedCount);
         }
+
+        [Test]
+        [Arguments(".xlsx", "A1", 32, "F3", 6, 3)]
+        [Arguments(".xls", "E2", 32, "F3", 6, 3)]
+        [Arguments(".xlsx", "H1", null, "I2", 9, 2)]
+        [Arguments(".xls", "H1", "", "I2", 9, 2)]
+        [Arguments(".xlsx", "A1", "Col7", "G1", 7, 1)]
+        [Arguments(".xls", "A1", "C10R8", "J9", 10, 9)]
+        [Arguments(".xlsx", "A1", "IamNotThere", "", -1, -1)]
+        public async Task FindValue_ReturnsAddress_WhenValueExists(string extension, string range, object? value, string expectedAddress, int expectedCol, int expectedRow)
+        {
+            var data = TableUtils.Generate(10, 10, 42);
+            var (processor, _) = NewFile(extension);
+            processor.WriteRange("Sheet1", data, "A1", true);
+            var (address, col, row) = processor.FindValue("Sheet1", range, value);
+            await Assert.That(address).IsEqualTo(expectedAddress);
+            await Assert.That(col).IsEqualTo(expectedCol);
+            await Assert.That(row).IsEqualTo(expectedRow);
+        }
     }
 }

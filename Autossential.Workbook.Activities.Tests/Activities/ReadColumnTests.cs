@@ -7,8 +7,24 @@
         [Arguments(".xlsx", "B1", 0, 0)]
         [Arguments(".xls", "F4", 0, 6)]
         [Arguments(".xlsx", "I3", 5, 5)]
-
         public async Task ReadColumn_ReturnsExpectedValue_BasedOnStaringCellAndLimit(string extension, string startingCell, int limit, int expectedCount)
+        {
+            object[] values = Run(extension, startingCell, limit);
+
+            await Assert.That(values.Length).IsEqualTo(expectedCount);
+        }
+
+        [Test]
+        [Arguments(".xls", null, 0, 10)]
+        [Arguments(".xlsx", "", 0, 0)]
+        public async Task ReadColumn_Fails_WhenMissingStartingCell(string extension, string? startingCell, int limit, int expectedCount)
+        {
+            object[] values = Run(extension, startingCell, limit);
+
+            await Assert.That(values.Length).IsEqualTo(expectedCount);
+        }
+
+        private object[] Run(string extension, string? startingCell, int limit)
         {
             var data = TableUtils.Build(10, 10, (col, row) =>
             {
@@ -34,8 +50,7 @@
                 StartingCell = startingCell,
                 Limit = limit
             });
-
-            await Assert.That(values.Length).IsEqualTo(expectedCount);
+            return values;
         }
     }
 }

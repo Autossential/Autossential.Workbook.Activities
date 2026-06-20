@@ -11,8 +11,9 @@
 		<VersionBuild>$([System.DateTime]::UtcNow.DayOfYear.ToString("F0"))</VersionBuild>
 		<VersionRevision>$([System.DateTime]::UtcNow.TimeOfDay.TotalMinutes.ToString("F0"))</VersionRevision>
 		<PackageId>Autossential.Workbook.Activities</PackageId>
-		<VersionPrefix Condition="'$(Configuration)' == 'Release'">1.0.1</VersionPrefix>
-		<VersionPrefix Condition="'$(Configuration)' == 'Debug'">1.0.1.$(VersionBuild)-preview.$(VersionRevision)</VersionPrefix>
+		<Version>1.1.0</Version>
+		<VersionPrefix Condition="'$(Configuration)' == 'Release'">$(Version)</VersionPrefix>
+		<VersionPrefix Condition="'$(Configuration)' == 'Debug'">$(Version).$(VersionBuild)-preview.$(VersionRevision)</VersionPrefix>
 		<Authors>UiPath</Authors>
 		<PackageTags>UiPathActivities</PackageTags>
 		<Product>Autossential.Workbook.Activities.Packaging</Product>
@@ -23,7 +24,7 @@
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<Copyright>© $([System.DateTime]::UtcNow.Year.ToString()) Alexandre Toledo Perez</Copyright>
 		<Description>
-			A lightweight Excel activity pack for reading XLSX/XLS files — no Excel application needed. Supports ranges, rows, columns, and cell‑level reads.
+			A lightweight Excel activity pack for handling XLS and XLSX files — no Excel application required. Supports both reading and writing operations across cells, rows, columns, and ranges, making spreadsheet automation simple and efficient. Designed for scenarios like data processing, reporting, and system integration.
 		</Description>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>

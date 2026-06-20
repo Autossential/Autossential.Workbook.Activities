@@ -493,4 +493,60 @@
     <value>El contenido que se escribirá en la celda especificada. Cualquier valor existente en la celda se reemplaza.</value>
     <comment>property description</comment>
   </data>
+	<data name="FindValue_DisplayName" xml:space="preserve">
+    <value>Buscar valor</value>
+    <comment>activity name</comment>
+</data>
+	<data name="FindValue_Description" xml:space="preserve">
+    <value>Busca un valor especificado dentro de un rango de una hoja de Excel y devuelve la dirección de la celda, el número de fila y el número de columna de la primera ocurrencia. Utilice esta actividad cuando necesite localizar datos específicos dentro de un libro de trabajo y recuperar sus coordenadas para su posterior procesamiento.</value>
+    <comment>activity description</comment>
+</data>
+	<data name="FindValue_SheetName_DisplayName" xml:space="preserve">
+    <value>Nombre de la hoja</value>
+    <comment>property name</comment>
+</data>
+	<data name="FindValue_SheetName_Description" xml:space="preserve">
+    <value>Nombre de la hoja de trabajo donde se buscará el valor. Esta propiedad es obligatoria y la hoja debe existir en el libro de trabajo.</value>
+    <comment>property description</comment>
+</data>
+	<data name="FindValue_Range_DisplayName" xml:space="preserve">
+    <value>Rango</value>
+    <comment>property name</comment>
+</data>
+	<data name="FindValue_Range_Description" xml:space="preserve">
+    <value>Rango de celdas donde buscar (por ejemplo, "A1:C10"). Si no se proporciona, el valor predeterminado es "A1", lo que busca en toda la hoja de trabajo.</value>
+    <comment>property description</comment>
+</data>
+	<data name="FindValue_Value_DisplayName" xml:space="preserve">
+    <value>Valor</value>
+    <comment>property name</comment>
+</data>
+	<data name="FindValue_Value_Description" xml:space="preserve">
+    <value>El valor de texto o numérico específico que se buscará dentro del rango de la hoja de trabajo. Esta propiedad es obligatoria y realiza una búsqueda de coincidencia exacta.</value>
+    <comment>property description</comment>
+</data>
+	<data name="FindValue_CellAddress_DisplayName" xml:space="preserve">
+    <value>Dirección de la celda</value>
+    <comment>property name</comment>
+</data>
+	<data name="FindValue_CellAddress_Description" xml:space="preserve">
+    <value>Devuelve la dirección de la celda que contiene el valor (por ejemplo, "B4").</value>
+    <comment>property description</comment>
+</data>
+	<data name="FindValue_RowNumber_DisplayName" xml:space="preserve">
+    <value>Número de fila</value>
+    <comment>property name</comment>
+</data>
+	<data name="FindValue_RowNumber_Description" xml:space="preserve">
+    <value>Devuelve el número de fila basado en 1 de la celda que contiene el valor (por ejemplo, 4 para la celda B4).</value>
+    <comment>property description</comment>
+</data>
+	<data name="FindValue_ColumnNumber_DisplayName" xml:space="preserve">
+    <value>Número de columna</value>
+    <comment>property name</comment>
+</data>
+	<data name="FindValue_ColumnNumber_Description" xml:space="preserve">
+    <value>Devuelve el número de columna basado en 1 de la celda que contiene el valor (por ejemplo, 2 para la celda B4).</value>
+    <comment>property description</comment>
+</data>
 </root>

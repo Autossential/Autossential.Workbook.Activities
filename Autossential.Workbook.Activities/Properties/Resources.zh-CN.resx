@@ -493,4 +493,60 @@
     <value>要写入指定单元格的内容。单元格中的任何现有值都将被替换。</value>
     <comment>property description</comment>
   </data>
+	<data name="FindValue_DisplayName" xml:space="preserve">
+    <value>查找值</value>
+    <comment>activity name</comment>
+</data>
+	<data name="FindValue_Description" xml:space="preserve">
+    <value>在 Excel 工作表范围内搜索指定值，并返回第一个匹配项的单元格地址、行号和列号。当您需要在工作簿中定位特定数据并获取其坐标以供后续处理时，请使用此活动。</value>
+    <comment>activity description</comment>
+</data>
+	<data name="FindValue_SheetName_DisplayName" xml:space="preserve">
+    <value>工作表名称</value>
+    <comment>property name</comment>
+</data>
+	<data name="FindValue_SheetName_Description" xml:space="preserve">
+    <value>要搜索值的工作表名称。此属性为必填项，且该工作表必须存在于工作簿中。</value>
+    <comment>property description</comment>
+</data>
+	<data name="FindValue_Range_DisplayName" xml:space="preserve">
+    <value>范围</value>
+    <comment>property name</comment>
+</data>
+	<data name="FindValue_Range_Description" xml:space="preserve">
+    <value>要搜索的单元格范围（例如 "A1:C10"）。如果未提供，默认为 "A1"，即搜索整个工作表。</value>
+    <comment>property description</comment>
+</data>
+	<data name="FindValue_Value_DisplayName" xml:space="preserve">
+    <value>值</value>
+    <comment>property name</comment>
+</data>
+	<data name="FindValue_Value_Description" xml:space="preserve">
+    <value>要在工作表范围内搜索的特定文本或数字值。此属性为必填项，并执行精确匹配搜索。</value>
+    <comment>property description</comment>
+</data>
+	<data name="FindValue_CellAddress_DisplayName" xml:space="preserve">
+    <value>单元格地址</value>
+    <comment>property name</comment>
+</data>
+	<data name="FindValue_CellAddress_Description" xml:space="preserve">
+    <value>返回包含该值的单元格地址（例如 "B4"）。</value>
+    <comment>property description</comment>
+</data>
+	<data name="FindValue_RowNumber_DisplayName" xml:space="preserve">
+    <value>行号</value>
+    <comment>property name</comment>
+</data>
+	<data name="FindValue_RowNumber_Description" xml:space="preserve">
+    <value>返回包含该值的单元格的从 1 开始的行号（例如，单元格 B4 返回 4）。</value>
+    <comment>property description</comment>
+</data>
+	<data name="FindValue_ColumnNumber_DisplayName" xml:space="preserve">
+    <value>列号</value>
+    <comment>property name</comment>
+</data>
+	<data name="FindValue_ColumnNumber_Description" xml:space="preserve">
+    <value>返回包含该值的单元格的从 1 开始的列号（例如，单元格 B4 返回 2）。</value>
+    <comment>property description</comment>
+</data>
 </root>

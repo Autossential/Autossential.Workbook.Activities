@@ -5,9 +5,28 @@ namespace Autossential.Workbook.Activities.Tests.Activities
     public class GetRangeSizeTests : BaseTests
     {
         [Test]
+        [Arguments(".xls", "", 10, 10)]
+        [Arguments(".xlsx", null, 5, 10)]
+        public async Task GetRangeSize_ReturnsBasedOnWholeSheet_WhenMissingRange(string extension, string? range, int expectedCols, int expectedRows)
+        {
+            Tuple<int, int> result = Run(extension, range);
+
+            await Assert.That(result.Item1).IsEqualTo(expectedCols);
+            await Assert.That(result.Item2).IsEqualTo(expectedRows);
+        }
+
+        [Test]
         [Arguments(".xlsx", "A1", 10, 10)]
-        [Arguments(".xlsx", "B1:G10", 5, 10)]
+        [Arguments(".xls", "B1:G10", 5, 10)]
         public async Task GetRangeSize_ReturnsExpectedSize_BasedOnRange(string extension, string range, int expectedCols, int expectedRows)
+        {
+            Tuple<int, int> result = Run(extension, range);
+
+            await Assert.That(result.Item1).IsEqualTo(expectedCols);
+            await Assert.That(result.Item2).IsEqualTo(expectedRows);
+        }
+
+        private Tuple<int, int> Run(string extension, string? range)
         {
             var data = TableUtils.Build(10, 10, (col, row) =>
             {
@@ -37,9 +56,7 @@ namespace Autossential.Workbook.Activities.Tests.Activities
                         RowCount = new OutArgument<int>(rowCount),
                         ColumnCount = new OutArgument<int>(colCount)
                     }], env => Tuple.Create(colCount.Get(env), rowCount.Get(env)));
-
-            await Assert.That(result.Item1).IsEqualTo(expectedCols);
-            await Assert.That(result.Item2).IsEqualTo(expectedRows);
+            return result;
         }
     }
 }

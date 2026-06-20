@@ -178,6 +178,132 @@ namespace Autossential.Workbook.Activities.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Returns the address of the cell containing the value (e.g., &quot;B4&quot;)..
+        /// </summary>
+        public static string FindValue_CellAddress_Description {
+            get {
+                return ResourceManager.GetString("FindValue_CellAddress_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cell Address.
+        /// </summary>
+        public static string FindValue_CellAddress_DisplayName {
+            get {
+                return ResourceManager.GetString("FindValue_CellAddress_DisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Returns the 1-based column number of the cell containing the value (e.g., 2 for cell B4)..
+        /// </summary>
+        public static string FindValue_ColumnNumber_Description {
+            get {
+                return ResourceManager.GetString("FindValue_ColumnNumber_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Column Number.
+        /// </summary>
+        public static string FindValue_ColumnNumber_DisplayName {
+            get {
+                return ResourceManager.GetString("FindValue_ColumnNumber_DisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Searches for a specified value within an Excel worksheet range and returns the cell address, row number, and column number of the first occurrence. Use this activity when you need to locate specific data within a workbook and retrieve its coordinates for further processing..
+        /// </summary>
+        public static string FindValue_Description {
+            get {
+                return ResourceManager.GetString("FindValue_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Find Value.
+        /// </summary>
+        public static string FindValue_DisplayName {
+            get {
+                return ResourceManager.GetString("FindValue_DisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cell range to search within (e.g., &quot;A1:C10&quot;). If not provided, defaults to &quot;A1&quot; which searches the entire worksheet..
+        /// </summary>
+        public static string FindValue_Range_Description {
+            get {
+                return ResourceManager.GetString("FindValue_Range_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Range.
+        /// </summary>
+        public static string FindValue_Range_DisplayName {
+            get {
+                return ResourceManager.GetString("FindValue_Range_DisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Returns the 1-based row number of the cell containing the value (e.g., 4 for cell B4)..
+        /// </summary>
+        public static string FindValue_RowNumber_Description {
+            get {
+                return ResourceManager.GetString("FindValue_RowNumber_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Row Number.
+        /// </summary>
+        public static string FindValue_RowNumber_DisplayName {
+            get {
+                return ResourceManager.GetString("FindValue_RowNumber_DisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name of the worksheet to search for the value. This property is required and the sheet must exist in the workbook..
+        /// </summary>
+        public static string FindValue_SheetName_Description {
+            get {
+                return ResourceManager.GetString("FindValue_SheetName_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sheet Name.
+        /// </summary>
+        public static string FindValue_SheetName_DisplayName {
+            get {
+                return ResourceManager.GetString("FindValue_SheetName_DisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The specific text or numeric value to locate within the worksheet range. This property is required and performs an exact match search..
+        /// </summary>
+        public static string FindValue_Value_Description {
+            get {
+                return ResourceManager.GetString("FindValue_Value_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Value.
+        /// </summary>
+        public static string FindValue_Value_DisplayName {
+            get {
+                return ResourceManager.GetString("FindValue_Value_DisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The number of columns in use included in the specified range..
         /// </summary>
         public static string GetRangeSize_ColumnCount_Description {

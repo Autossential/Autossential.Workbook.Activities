@@ -3,6 +3,7 @@ using DocumentFormat.OpenXml.Math;
 using DocumentFormat.OpenXml.Spreadsheet;
 using ExcelDataReader;
 using NPOI.HSSF.Record.Chart;
+using NPOI.SS.Formula.Functions;
 using System.Data;
 
 namespace Autossential.Workbook.Activities.Core.Processors
@@ -201,7 +202,7 @@ namespace Autossential.Workbook.Activities.Core.Processors
             var reader = GetReader();
             var table = new DataTable();
             int colNameIndex = 1;
-            
+
             do
             {
                 if (!reader.Name.Equals(sheetName, StringComparison.OrdinalIgnoreCase))
@@ -302,9 +303,9 @@ namespace Autossential.Workbook.Activities.Core.Processors
 
                 table.EndLoadData();
                 return table.TrimOrAppend(
-                    rangeRef, 
-                    EMPTY_COLUMN_NAME_PREFIX, 
-                    colNameIndex, 
+                    rangeRef,
+                    EMPTY_COLUMN_NAME_PREFIX,
+                    colNameIndex,
                     hasHeaders,
                     safeHeaderRows,
                     safeRowsPerRecord);
@@ -452,6 +453,53 @@ namespace Autossential.Workbook.Activities.Core.Processors
             string name = _defaultSheetName;
             _defaultSheetName = null;
             return name;
+        }
+
+        public (string, int, int) FindValue(string sheetName, string range, object value)
+        {
+            ValidateSheetName(sheetName);
+            var reader = GetReader();
+
+            do
+            {
+                if (!reader.Name.Equals(sheetName, StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                var rangeRef = ResolveRange(range);
+
+                var startColIndex = rangeRef.Start.Col - 1;
+                var endCol = Math.Min(rangeRef.End.Col, reader.FieldCount);
+
+                while (reader.Read())
+                {
+                    if (reader.Depth + 1 < rangeRef.Start.Row)
+                        continue;
+
+                    for (int i = startColIndex; i < endCol; i++)
+                    {
+                        var cellValue = reader.GetValue(i);
+                        if (cellValue is null || string.IsNullOrEmpty(cellValue.ToString()))
+                        {
+                            if (value is null || string.IsNullOrEmpty(value.ToString()))
+                            {
+                                cellValue = null;
+                                value = null;
+                            }
+                        }
+
+                        if (cellValue == value || cellValue?.ToString() == value?.ToString())
+                        {
+                            var cell = new CellReference(i + 1, reader.Depth + 1);
+                            return (cell.ToString(), cell.Col, cell.Row);
+                        }
+                    }
+                }
+
+                break;
+
+            } while (reader.NextResult());
+
+            return (string.Empty, -1, -1);
         }
     }
 }

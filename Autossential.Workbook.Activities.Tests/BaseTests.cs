@@ -58,11 +58,35 @@ namespace Autossential.Workbook.Activities.Tests
             File.Delete(tempZip);
         }
 
-        protected (IWorkbookProcessor processor, string filePath) NewFile(string extension)
+        protected string NewTempFilePath(string extension)
         {
             _filePath = Path.ChangeExtension(Path.GetTempFileName(), extension);
+            return _filePath;
+        }
+
+        protected (IWorkbookProcessor processor, string filePath) NewFile(string extension)
+        {
+            _filePath = NewTempFilePath(extension);
             var processor = WorkbookProcessorFactory.OpenOrCreate(_filePath);
             return (processor, _filePath);
+        }
+
+        public static void InvokeWorkbookScopeWith(string workbookPath, Activity activity, string tag = WorkbookScope.TAG)
+        {
+            var dyn = new DynamicActivity
+            {
+                Implementation = () => new WorkbookScope
+                {
+                    WorkbookPath = workbookPath,
+                    Body = new ActivityAction<IWorkbookProcessor>
+                    {
+                        Argument = new DelegateInArgument<IWorkbookProcessor>(tag),
+                        Handler = activity
+                    }
+                }
+            };
+
+            WorkflowInvoker.Invoke(dyn);
         }
 
         public static T InvokeWorkbookScopeWith<T>(string workbookPath, Activity<T> activity, string tag = WorkbookScope.TAG)

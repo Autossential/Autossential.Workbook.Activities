@@ -13,6 +13,7 @@ namespace Autossential.Workbook.Activities.Core
         object[] ReadColumn(string sheetName, string startingCell, int limit = 0);
         void WriteRange(string sheetName, DataTable data, string startingCell, bool addHeaders);
         void WriteCell(string sheetName, string address, object value);
+        (string, int, int) FindValue(string sheetName, string range, object value);
         void Save();
     }
 }

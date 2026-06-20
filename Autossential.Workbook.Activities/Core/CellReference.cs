@@ -12,7 +12,7 @@
         public const int OPENXML_MAX_ROWS = 1_048_576;
         public const string OPENXML_MAX_REFERENCE = "XFD1048576";
 
-        private CellReference(int col, int row)
+        internal CellReference(int col, int row)
         {
             Row = row;
             Col = col;
