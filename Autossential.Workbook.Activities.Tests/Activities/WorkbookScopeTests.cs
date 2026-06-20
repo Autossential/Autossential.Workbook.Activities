@@ -1,4 +1,6 @@
-﻿namespace Autossential.Workbook.Activities.Tests.Activities
+﻿using System.Activities;
+
+namespace Autossential.Workbook.Activities.Tests.Activities
 {
     public class WorkbookScopeTests : BaseTests
     {
