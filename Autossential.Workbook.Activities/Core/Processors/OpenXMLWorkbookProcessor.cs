@@ -2,6 +2,7 @@
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
+using NPOI.XSSF.Streaming;
 using System.Data;
 using System.Globalization;
 
@@ -15,9 +16,24 @@ namespace Autossential.Workbook.Activities.Core.Processors
             return SpreadsheetDocument.Open(WorkbookStream, true);
         }
 
-        protected override CellReference ResolveCell(string address) => CellReference.OpenXml(address);
+        protected override CellReference ResolveCell(string address)
+        {
+            var cellRef = new CellReference(address);
+            if (!cellRef.IsValidForOpenXml())
+                throw new InvalidOperationException("The specified cell address is not valid for Excel 97 - Excel 2003 (BIFF8) format.");
 
-        protected override RangeReference ResolveRange(string range) => RangeReference.OpenXml(range);
+            return cellRef;
+        }
+
+        protected override RangeReference ResolveRange(string range)
+        {
+            var rangeRef = new RangeReference(range, CellReference.OPENXML_MAX_REFERENCE);
+
+            if (!rangeRef.IsValidForOpenXml())
+                throw new InvalidOperationException("The specified range is not valid for Excel 2007 format.");
+
+            return rangeRef;
+        }
 
         public override void WriteRange(string sheetName, DataTable data, string startingCell, bool addHeaders)
         {
@@ -28,7 +44,7 @@ namespace Autossential.Workbook.Activities.Core.Processors
             var wsPart = (WorksheetPart)wbPart.GetPartById(sheet.Id.Value);
 
             var sheetData = wsPart.Worksheet.GetFirstChild<SheetData>();
-            var cellRef = CellReference.OpenXml(startingCell);
+            var cellRef = ResolveCell(startingCell);
 
             int startRow = cellRef.Row;
             int startCol = cellRef.Col;
@@ -138,7 +154,7 @@ namespace Autossential.Workbook.Activities.Core.Processors
             var wsPart = (WorksheetPart)wbPart.GetPartById(sheet.Id.Value);
 
             var sheetData = wsPart.Worksheet.GetFirstChild<SheetData>();
-            var cellRef = CellReference.OpenXml(address);
+            var cellRef = ResolveCell(address);
             var rowIndex = cellRef.Row;
 
             var existingRow = sheetData.Elements<Row>()
@@ -232,8 +248,16 @@ namespace Autossential.Workbook.Activities.Core.Processors
                     break;
 
                 case string s:
-                    cell.DataType = CellValues.SharedString;
-                    cell.CellValue = new CellValue(GetOrAddSharedString(sst, sstIndex, s).ToString());
+                    if (s.StartsWith('='))
+                    {
+                        cell.CellFormula = new CellFormula(s[1..]);
+                        cell.CellValue = new CellValue();
+                    }
+                    else
+                    {
+                        cell.DataType = CellValues.SharedString;
+                        cell.CellValue = new CellValue(GetOrAddSharedString(sst, sstIndex, s).ToString());
+                    }
                     break;
 
                 case bool b:
@@ -272,21 +296,27 @@ namespace Autossential.Workbook.Activities.Core.Processors
                 case double d:
                     cell.CellValue = new CellValue(d.ToString(CultureInfo.InvariantCulture));
                     break;
+
                 case float f:
                     cell.CellValue = new CellValue(((double)f).ToString(CultureInfo.InvariantCulture));
                     break;
+
                 case decimal dec:
                     cell.CellValue = new CellValue(dec.ToString(CultureInfo.InvariantCulture));
                     break;
+
                 case int i:
                     cell.CellValue = new CellValue(i.ToString(CultureInfo.InvariantCulture));
                     break;
+
                 case long l:
                     cell.CellValue = new CellValue(l.ToString(CultureInfo.InvariantCulture));
                     break;
+
                 case short sh:
                     cell.CellValue = new CellValue(sh.ToString(CultureInfo.InvariantCulture));
                     break;
+
                 case byte by:
                     cell.CellValue = new CellValue(by.ToString(CultureInfo.InvariantCulture));
                     break;
@@ -397,6 +427,88 @@ namespace Autossential.Workbook.Activities.Core.Processors
             wbPart.DeletePart(wsPart);
             sheet.Remove();
 
+            wbPart.Workbook.Save();
+        }
+
+        public override void DeleteSheet(string sheetName)
+        {
+            using var doc = GetWorkbook();
+            var wbPart = doc.WorkbookPart;
+
+            var sheets = wbPart.Workbook.Sheets.Elements<Sheet>();
+            var sheet = sheets.FirstOrDefault(s => string.Equals(s.Name?.Value, sheetName, StringComparison.OrdinalIgnoreCase));
+
+            if (sheet == null)
+                return;
+
+            if (sheets.Count() == 1)
+                throw new InvalidOperationException($"Cannot delete the only sheet \"{sheetName}\" in the workbook.");
+
+            var wsPart = (WorksheetPart)wbPart.GetPartById(sheet.Id.Value);
+            wbPart.DeletePart(wsPart);
+            sheet.Remove();
+
+            wbPart.Workbook.Save();
+        }
+
+        public override void InsertSheet(string sheetName, int? position = null)
+        {
+            using var doc = GetWorkbook();
+            var wbPart = doc.WorkbookPart;
+
+            var existingSheet = wbPart.Workbook.Sheets
+                .Elements<Sheet>()
+                .FirstOrDefault(s => string.Equals(s.Name?.Value, sheetName, StringComparison.OrdinalIgnoreCase));
+
+            if (existingSheet != null)
+                throw new InvalidOperationException($"A sheet with name '{sheetName}' already exists.");
+
+            var wsPart = wbPart.AddNewPart<WorksheetPart>();
+            wsPart.Worksheet = new Worksheet(new SheetData());
+
+            uint sheetId = 1;
+
+            var sheetElements = wbPart.Workbook.Sheets.Elements<Sheet>();
+            if (sheetElements.Any())
+                sheetId = sheetElements.Max(s => s.SheetId.Value) + 1;
+
+            var newSheet = new Sheet
+            {
+                Id = wbPart.GetIdOfPart(wsPart),
+                SheetId = sheetId,
+                Name = sheetName
+            };
+
+            var sheets = wbPart.Workbook.Sheets;
+            if (position.HasValue && position.Value > 0 && position.Value <= sheets.Count())
+            {
+                var refSheet = sheets.Elements<Sheet>().ElementAt(position.Value - 1);
+                refSheet.InsertBeforeSelf(newSheet);
+            }
+            else
+            {
+                sheets.Append(newSheet);
+            }
+
+            wbPart.Workbook.Save();
+        }
+
+        public override void RenameSheet(string fromSheetName, string toSheetName)
+        {
+            using var doc = GetWorkbook();
+            var wbPart = doc.WorkbookPart;
+            var sheets = wbPart.Workbook.Sheets.Elements<Sheet>();
+            var sheet = sheets.FirstOrDefault(s => string.Equals(s.Name?.Value, fromSheetName, StringComparison.OrdinalIgnoreCase))
+                    ?? throw new InvalidOperationException($"No sheet with name '{fromSheetName}' was found.");
+
+            if (sheet.Name.Value == toSheetName)
+                return;
+
+            var anotherSheet = sheets.FirstOrDefault(s => string.Equals(s.Name?.Value, toSheetName, StringComparison.OrdinalIgnoreCase));
+            if (anotherSheet is not null && anotherSheet.Id.Value != sheet.Id.Value)
+                throw new InvalidOperationException($"Another sheet with name '{toSheetName}' already exists in the workbook.");
+
+            sheet.Name = toSheetName;
             wbPart.Workbook.Save();
         }
     }

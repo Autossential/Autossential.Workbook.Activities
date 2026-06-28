@@ -1,7 +1,7 @@
-﻿using DocumentFormat.OpenXml.Packaging;
-using DocumentFormat.OpenXml.Spreadsheet;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
+using System.Activities.Presentation.ViewState;
 using System.Data;
 
 namespace Autossential.Workbook.Activities.Core.Processors
@@ -25,9 +25,23 @@ namespace Autossential.Workbook.Activities.Core.Processors
             workbook.Write(WorkbookStream, true);
         }
 
-        protected override CellReference ResolveCell(string address) => CellReference.Binary(address);
+        protected override CellReference ResolveCell(string address)
+        {
+            var cellRef = new CellReference(address);
+            if (!cellRef.IsValidForBIFF8())
+                throw new InvalidOperationException("The specified cell address is not valid for Excel 97 - Excel 2003 (BIFF8) format.");
 
-        protected override RangeReference ResolveRange(string range) => RangeReference.Binary(range);
+            return cellRef;
+        }
+
+        protected override RangeReference ResolveRange(string range)
+        {
+            var rangeRef = new RangeReference(range, CellReference.BIFF8_MAX_REFERENCE);
+            if (!rangeRef.IsValidForBIFF8())
+                throw new InvalidOperationException("The specified range is not valid for Excel 97 - Excel 2003 (BIFF8) format.");
+
+            return rangeRef;
+        }
 
         public override void WriteCell(string sheetName, string address, object value)
         {
@@ -37,7 +51,7 @@ namespace Autossential.Workbook.Activities.Core.Processors
 
             var (dateStyle, timeStyle, dateTimeStyle) = GetCellStyles(wb);
 
-            var cellRef = CellReference.Binary(address);
+            var cellRef = ResolveCell(address);
             var colLetter = CellReference.GetColumnName(cellRef.Col);
             var rowIndex = cellRef.Row;
 
@@ -61,7 +75,7 @@ namespace Autossential.Workbook.Activities.Core.Processors
 
             var (dateStyle, timeStyle, dateTimeStyle) = GetCellStyles(wb);
 
-            var cellRef = CellReference.Binary(startingCell);
+            var cellRef = ResolveCell(startingCell);
             var colLetter = CellReference.GetColumnName(cellRef.Col);
             var rowIndex = cellRef.Row;
 
@@ -103,7 +117,13 @@ namespace Autossential.Workbook.Activities.Core.Processors
                     break;
 
                 case string s:
-                    cell.SetCellValue(s);
+                    if (s.StartsWith('='))
+                    {
+                        cell.SetCellFormula(s[1..]);
+                    }
+                    {
+                        cell.SetCellValue(s);
+                    }
                     break;
 
                 case bool b:
@@ -140,21 +160,27 @@ namespace Autossential.Workbook.Activities.Core.Processors
                 case double d:
                     cell.SetCellValue(d);
                     break;
+
                 case float f:
                     cell.SetCellValue((double)f);
                     break;
+
                 case decimal dec:
                     cell.SetCellValue((double)dec);
                     break;
+
                 case int i:
                     cell.SetCellValue(i);
                     break;
+
                 case long l:
                     cell.SetCellValue(l);
                     break;
+
                 case short sh:
                     cell.SetCellValue(sh);
                     break;
+
                 case byte by:
                     cell.SetCellValue(by);
                     break;
@@ -197,6 +223,57 @@ namespace Autossential.Workbook.Activities.Core.Processors
                 return;
 
             wb.RemoveSheetAt(index);
+        }
+
+        public override void DeleteSheet(string sheetName)
+        {
+            using var wb = GetWorkbook();
+            var sheet = wb.GetSheet(sheetName);
+            if (sheet == null)
+                return;
+
+            if (wb.NumberOfSheets == 1)
+                throw new InvalidOperationException($"Cannot delete the only sheet \"{sheetName}\" in the workbook.");
+
+            var sheetIndex = wb.GetSheetIndex(sheet);
+            wb.RemoveSheetAt(sheetIndex);
+
+            FlushWorkbook(wb);
+        }
+
+        public override void InsertSheet(string sheetName, int? position = null)
+        {
+            using var wb = GetWorkbook();
+            if (wb.GetSheet(sheetName) != null)
+                throw new InvalidOperationException($"A sheet with name '{sheetName}' already exists.");
+
+            var newSheet = wb.CreateSheet(sheetName);
+            if (position.HasValue && position.Value > 0)
+            {
+                int pos = position.Value - 1;
+                if (pos < 0 || pos > wb.NumberOfSheets - 1)
+                    pos = wb.NumberOfSheets - 1;
+
+                wb.SetSheetOrder(sheetName, pos);
+            }
+
+            FlushWorkbook(wb);
+        }
+
+        public override void RenameSheet(string fromSheetName, string toSheetName)
+        {
+            using var wb = GetWorkbook();
+            var sheet = wb.GetSheet(fromSheetName) ?? throw new InvalidOperationException($"No sheet with name '{fromSheetName}' was found.");
+            if (sheet.SheetName == toSheetName)
+                return;
+
+            var anotherSheet = wb.GetSheet(toSheetName);
+            if (anotherSheet is not null && wb.GetSheetIndex(sheet) != wb.GetSheetIndex(anotherSheet))
+                throw new InvalidOperationException($"Another sheet with name '{toSheetName}' already exists in the workbook.");
+
+            int sheetIndex = wb.GetSheetIndex(sheet);
+            wb.SetSheetName(sheetIndex, toSheetName);
+            FlushWorkbook(wb);
         }
     }
 }

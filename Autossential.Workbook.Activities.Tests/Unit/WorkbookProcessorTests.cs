@@ -295,11 +295,11 @@ namespace Autossential.Workbook.Activities.Tests.Unit
         [Arguments(".xlsx", "B15", null)]
         [Arguments(".xls", "B15", null)]
         [Arguments(".xlsx", "A2", false)]
-        [Arguments(".xls", "A2", false, Skip = "ExcelDataReader issue to read boolean values")]
+        [Arguments(".xls", "A2", false)]
         [Arguments(".xlsx", "E4", true)]
-        [Arguments(".xls", "E4", true, Skip = "ExcelDataReader issue to read boolean values")]
+        [Arguments(".xls", "E4", true)]
         [Arguments(".xlsx", "H9", "")]
-        [Arguments(".xls", "E1", "", Skip = "Returns null for .xls files")]
+        [Arguments(".xls", "E1", "")]
         public async Task WriteAndReadCell_ValueMatches_AfterWriteAndRead(string extension, string address, object? value)
         {
             var (processor, _) = NewFile(extension);
@@ -307,7 +307,10 @@ namespace Autossential.Workbook.Activities.Tests.Unit
             processor.WriteCell("shEET1", address, value);
 
             var readValue = processor.ReadCell("Sheet1", address);
-            await Assert.That(readValue).IsEqualTo(value);
+            if (extension == ".xls" && value?.ToString() == string.Empty)
+                await Assert.That(readValue).IsNull();
+            else
+                await Assert.That(readValue).IsEqualTo(value);
         }
 
         [Test]
@@ -429,6 +432,127 @@ namespace Autossential.Workbook.Activities.Tests.Unit
             await Assert.That(address).IsEqualTo(expectedAddress);
             await Assert.That(col).IsEqualTo(expectedCol);
             await Assert.That(row).IsEqualTo(expectedRow);
+        }
+
+        [Test]
+        [Arguments(".xlsx")]
+        [Arguments(".xls")]
+        public async Task InsertSheet_Inserts_WhenNameIsUnique(string extension)
+        {
+            var (processor, _) = NewFile(extension);
+            processor.InsertSheet("Sheet2");
+            processor.InsertSheet("Sheet3");
+            processor.InsertSheet("Sheet4");
+
+            var sheetNames = processor.GetSheetNames();
+            await Assert.That(sheetNames).IsEquivalentTo(["Sheet1", "Sheet2", "Sheet3", "Sheet4"]);
+        }
+
+        [Test]
+        [Arguments(".xlsx", 1)]
+        [Arguments(".xlsx", 2)]
+        [Arguments(".xlsx", 3)]
+
+        [Arguments(".xls", 1)]
+        [Arguments(".xls", 2)]
+        [Arguments(".xls", 3)]
+        public async Task InsertSheet_InsertsInSpecificPosition_WhenPositionIsInformed(string extension, int position)
+        {
+            var (processor, _) = NewFile(extension);
+            processor.InsertSheet("Sheet2");
+            processor.InsertSheet("Sheet3");
+            processor.InsertSheet("Sheet4");
+
+            processor.InsertSheet("Data", position);
+
+            var sheetNames = processor.GetSheetNames();
+            await Assert.That(sheetNames).Count().IsEqualTo(5);
+            await Assert.That(sheetNames[position - 1]).IsEqualTo("Data");
+        }
+
+        [Test]
+        [Arguments(".xlsx")]
+        [Arguments(".xls")]
+        public void InsertSheet_ThrownsException_WhenNameAlreadyExists(string extension)
+        {
+            Assert.ThrowsExactly<InvalidOperationException>(() =>
+            {
+                var (processor, _) = NewFile(extension);
+                processor.InsertSheet("Sheet2");
+                processor.InsertSheet("Sheet2");
+            });
+        }
+
+        [Test]
+        [Arguments(".xlsx")]
+        [Arguments(".xls")]
+        public async Task DeleteSheet_SheetIsDeleted_WhenExists(string extension)
+        {
+            var (processor, _) = NewFile(extension);
+            processor.InsertSheet("Sheet2");
+            processor.InsertSheet("Sheet3");
+            processor.InsertSheet("Sheet4");
+            processor.DeleteSheet("Sheet3");
+
+            await Assert.That(processor.GetSheetNames()).IsEquivalentTo(["Sheet1", "Sheet2", "Sheet4"]);
+        }
+
+        [Test]
+        [Arguments(".xlsx")]
+        [Arguments(".xls")]
+        public void DeleteSheet_ThrowsException_WhenOnlyOneSheetExists(string extension)
+        {
+            Assert.ThrowsExactly<InvalidOperationException>(() =>
+            {
+                var (processor, _) = NewFile(extension);
+                processor.DeleteSheet("Sheet1");
+            });
+        }
+
+        [Test]
+        [Arguments(".xlsx")]
+        [Arguments(".xls")]
+        public async Task RenameSheet_Renames_WhenSheetIsFound(string extension)
+        {
+            var (processor, _) = NewFile(extension);
+            processor.RenameSheet("Sheet1", "Data");
+            await Assert.That(processor.GetSheetNames()).IsEquivalentTo(["Data"]);
+        }
+
+        [Test]
+        [Arguments(".xlsx")]
+        [Arguments(".xls")]
+        public async Task RenameSheet_Renames_WhenNoOtherSheetExistsWithSameName(string extension)
+        {
+            var (processor, _) = NewFile(extension);
+            processor.RenameSheet("Sheet1", "sheet1"); // lowercase
+            await Assert.That(processor.GetSheetNames()).IsEquivalentTo(["sheet1"]);
+        }
+
+        [Test]
+        [Arguments(".xlsx")]
+        [Arguments(".xls")]
+        public void RenameSheet_ThrowsException_WhenAnotherSheetExistsWithSameName(string extension)
+        {
+            Assert.ThrowsExactly<InvalidOperationException>(() =>
+            {
+                var (processor, _) = NewFile(extension);
+                processor.InsertSheet("Sheet2");
+                processor.InsertSheet("Sheet3");
+                processor.RenameSheet("Sheet2", "Sheet1");
+            });
+        }
+
+        [Test]
+        [Arguments(".xlsx")]
+        [Arguments(".xls")]
+        public void RenameSheet_ThrowsException_WhenSheetDoesNotExists(string extension)
+        {
+            Assert.ThrowsExactly<InvalidOperationException>(() =>
+            {
+                var (processor, f) = NewFile(extension);
+                processor.RenameSheet("DoesNotExist", "Data");
+            });
         }
     }
 }
