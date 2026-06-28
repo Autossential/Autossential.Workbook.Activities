@@ -1,6 +1,6 @@
 ﻿namespace Autossential.Workbook.Activities.Core
 {
-    public readonly struct CellReference : IEquatable<CellReference>
+    internal readonly struct CellReference : IEquatable<CellReference>
     {
         public const int BIFF8_MAX_COLS = 256;
         public const string BIFF8_MAX_REFERENCE = "IV65536";
