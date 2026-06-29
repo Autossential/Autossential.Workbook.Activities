@@ -232,15 +232,18 @@ namespace Autossential.Workbook.Activities.Core.Processors
                         {
                             var name = reader.GetValue(i)?.ToString();
                             if (string.IsNullOrEmpty(name))
-                                name = $"{EMPTY_COLUMN_NAME_PREFIX}{colNameIndex++}";
+                                name = null;
 
                             if (headers.TryGetValue(i, out string header))
                             {
+                                if (name is null)
+                                    continue;
+
                                 headers[i] = $"{header} {name.Trim()}";
                                 continue;
                             }
 
-                            headers[i] = name.Trim();
+                            headers[i] = (name ?? $"{EMPTY_COLUMN_NAME_PREFIX}{colNameIndex++}").Trim();
                         }
                     }
 
@@ -281,7 +284,14 @@ namespace Autossential.Workbook.Activities.Core.Processors
                         if (value == null || string.IsNullOrEmpty(value.ToString()))
                             continue;
 
-                        row[ri] = $"{row[ri]} {value.ToString().Trim()}";
+                        var currValue = row[ri]?.ToString();
+                        if (string.IsNullOrEmpty(currValue))
+                        {
+                            row[ri] = value.ToString().Trim();
+                            continue;
+                        }
+
+                        row[ri] = $"{currValue} {value.ToString().Trim()}";
                     }
 
                     if (--rowsPerRecord <= 0)

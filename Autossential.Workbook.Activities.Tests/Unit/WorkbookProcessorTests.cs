@@ -1,4 +1,6 @@
 ﻿using Autossential.Workbook.Activities.Core;
+using DocumentFormat.OpenXml.Office2016.Drawing.Command;
+using System.Data;
 
 namespace Autossential.Workbook.Activities.Tests.Unit
 {
@@ -553,6 +555,52 @@ namespace Autossential.Workbook.Activities.Tests.Unit
                 var (processor, f) = NewFile(extension);
                 processor.RenameSheet("DoesNotExist", "Data");
             });
+        }
+
+        [Test]
+        [Arguments(".xlsx")]
+        [Arguments(".xls")]
+        public async Task ReadRange_ReturnsCorrectHeaderAndRows_WhenHeaderRowsAndRowsPerRecord(string extension)
+        {
+            var data = TableUtils.Build(4, 12, (col, row) =>
+            {
+                if (row == 1)
+                    return $"C{col}";
+
+                if (row == 2)
+                    return col == 2 || col == 4 ? $"C{col}" : "";
+
+                if (row == 3)
+                    return col == 3 || col == 4 ? $"C{col}" : null;
+
+                if (row % 3 == 0)
+                {
+                    if (col == 2)
+                        return $"C{col}R{row}";
+
+                    return "";
+                }
+
+                if (col == 2 && (row == 5 || row == 10))
+                    return "";
+
+                return $"C{col}R{row}";
+            });
+
+            var (processor, f) = NewFile(extension);
+            processor.WriteRange("Sheet1", data, "A1", false);
+            var readData = processor.ReadRange("Sheet1", "A1", true, 3, 3);
+            var cols = readData.Columns.Cast<DataColumn>().Select(c => c.ColumnName).ToArray();
+            await Assert.That(cols).IsEquivalentTo(["C1", "C2 C2", "C3 C3", "C4 C4 C4"]);
+
+            await Assert.That(readData.Rows[0].ItemArray.Cast<string>())
+                .IsEquivalentTo(["C1R4 C1R5", "C2R4 C2R6", "C3R4 C3R5", "C4R4 C4R5"]);
+
+            await Assert.That(readData.Rows[1].ItemArray.Cast<string>())
+                .IsEquivalentTo(["C1R7 C1R8", "C2R7 C2R8 C2R9", "C3R7 C3R8", "C4R7 C4R8"]);
+
+            await Assert.That(readData.Rows[2].ItemArray.Cast<string>())
+                .IsEquivalentTo(["C1R10 C1R11", "C2R11 C2R12", "C3R10 C3R11", "C4R10 C4R11"]);
         }
     }
 }
